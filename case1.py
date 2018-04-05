@@ -31,7 +31,7 @@ class BarberShop:
                 mutex.release()
                 print('Barber is sleeping')
                 self.barber.sleep()
-                print('Barber woke up')
+                print('Customer-{0} has woken up the barber'.format(self.waitingCustomers[0]))
 
     def enterBarberShop(self, customer):
         mutex.acquire()
