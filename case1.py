@@ -51,12 +51,13 @@ class Barber:
     barberWorkingEvent = Event()
 
     def __init__(self, durationOfHaircut):
-        self.durationOfHaricut = durationOfHaircut
+        self.durationOfHaircut = durationOfHaircut
 
     def sleep(self):
         self.barberWorkingEvent.wait()
 
     def wakeUp(self):
+        # awaken the thread
         self.barberWorkingEvent.set()
 
     def cutHair(self, customer):
@@ -65,7 +66,7 @@ class Barber:
 
         print('Barber is cutting Customer-{0} hair'.format(customer))
 
-        time.sleep(self.durationOfHaricut)
+        time.sleep(self.durationOfHaircut)
         print('Customer-{0} haircut is complete'.format(customer))
 
 
