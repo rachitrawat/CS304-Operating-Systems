@@ -41,7 +41,7 @@ class BarberShop:
             print('Barbershop is full, Customer-{0} has left'.format(customer))
             mutex.release()
         else:
-            print('Barber is busy, Customer-{0} is waiting'.format(customer))
+            print('Barber is busy, Customer-{0} is waiting on chair-{1}'.format(customer, len(self.waitingCustomers)))
             self.waitingCustomers.append(c)
             mutex.release()
             self.barber.wakeUp()
@@ -64,6 +64,7 @@ class Barber:
         # Set barber as busy
         self.barberWorkingEvent.clear()
 
+        print('Customer-{0} is sitting on the barber chair'.format(customer))
         print('Barber is cutting Customer-{0} hair'.format(customer))
 
         time.sleep(self.durationOfHaircut)
