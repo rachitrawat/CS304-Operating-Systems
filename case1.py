@@ -14,7 +14,7 @@ class BarberShop:
         self.numberOfSeats = numberOfSeats
 
     def openShop(self):
-        print('Barber has opened the Barber Shop')
+        print('{0} has opened the Barbershop'.format(self.barber.name))
         workingThread = Thread(target=self.barberGoToWork)
         workingThread.start()
 
@@ -29,19 +29,25 @@ class BarberShop:
                 self.barber.cutHair(c)
             else:
                 mutex.release()
-                print('Barber is sleeping')
+                print('{0} is sleeping.'.format(self.barber.name))
                 self.barber.sleep()
-                print('Customer-{0} has woken up the barber'.format(self.waitingCustomers[0]))
+                print('Customer-{0} has woken up {1}.'.format(self.waitingCustomers[0], self.barber.name))
 
     def enterBarberShop(self, customer):
         mutex.acquire()
-        print('Customer-{0} has arrived'.format(customer))
-
-        if len(self.waitingCustomers) == self.numberOfSeats:
-            print('Barbershop is full, Customer-{0} has left'.format(customer))
+        print('Customer-{0} has arrived.'.format(customer))
+        # If there is no one in the barber chair
+        if self.barber.barberChair == False:
+            self.waitingCustomers.append(c)
             mutex.release()
+            self.barber.wakeUp()
+        # If someone is in the barber chair and there are seats left in the waiting room
+        elif len(self.waitingCustomers) == self.numberOfSeats:
+            print('Barbershop is full, Customer-{0} has left.'.format(customer))
+            mutex.release()
+        # No seats in waiting room
         else:
-            print('Barber is busy, Customer-{0} is waiting on chair-{1}'.format(customer, len(self.waitingCustomers)))
+            print('{0} is busy, Customer-{1} is waiting on chair-{2}.'.format(self.barber.name, customer, len(self.waitingCustomers)))
             self.waitingCustomers.append(c)
             mutex.release()
             self.barber.wakeUp()
@@ -50,8 +56,10 @@ class BarberShop:
 class Barber:
     barberWorkingEvent = Event()
 
-    def __init__(self, durationOfHaircut):
+    def __init__(self, name, durationOfHaircut):
+        self.name = name
         self.durationOfHaircut = durationOfHaircut
+        self.barberChair = False    # Assigns barber chair as occupied (True) or unoccupied (False)
 
     def sleep(self):
         self.barberWorkingEvent.wait()
@@ -64,11 +72,12 @@ class Barber:
         # Set barber as busy
         self.barberWorkingEvent.clear()
 
-        print('Customer-{0} is sitting on the barber chair'.format(customer))
-        print('Barber is cutting Customer-{0} hair'.format(customer))
-
+        print('Customer-{0} is sitting in the barber chair.'.format(customer))
+        print('{0} is cutting Customer-{1}\'s hair.'.format(self.name, customer))
+        self.barberChair = True
         time.sleep(self.durationOfHaircut)
-        print('Customer-{0} haircut is complete'.format(customer))
+        print('Customer-{0}\'s haircut is complete.'.format(customer))
+        self.barberChair = False
 
 
 def generate_random_number():
@@ -90,16 +99,16 @@ if __name__ == '__main__':
     rand_gen.start()
 
     # customer list
-    customer = list(range(6))
-    customer.reverse()
+    customers = list(range(6))
+    customers.reverse()
 
-    barber = Barber(durationOfHaircut)
-    barberShop = BarberShop(barber, numberOfSeats)
+    SweenyTodd = Barber('Sweeny Todd', durationOfHaircut)
+    barberShop = BarberShop(SweenyTodd, numberOfSeats)
     barberShop.openShop()
 
-    while (len(customer) > 0):
+    while (len(customers) > 0):
         time.sleep(1)
         if enterFlag == 0:
-            c = customer.pop()
+            c = customers.pop()
             # New customer enters the barbershop
             barberShop.enterBarberShop(c)
