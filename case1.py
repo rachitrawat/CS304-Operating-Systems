@@ -13,7 +13,7 @@ class BarberShop:
         self.numberOfSeats = numberOfSeats
 
     def openShop(self):
-        print('{0} has opened the Barbershop'.format(self.barber.name))
+        print('{0} has opened the Barbershop!'.format(self.barber.name))
         workingThread = Thread(target=self.barberGoToWork)
         workingThread.start()
 
@@ -28,7 +28,7 @@ class BarberShop:
                 self.barber.cutHair(c)
             else:
                 mutex.release()
-                print('{0} is sleeping.'.format(self.barber.name))
+                print('{0} is sleeping...'.format(self.barber.name))
                 self.barber.sleep()
                 print('Customer-{0} has woken up {1}.'.format(self.waitingCustomers[0], self.barber.name))
 

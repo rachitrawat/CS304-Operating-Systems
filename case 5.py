@@ -1,6 +1,7 @@
 import time
 from random import randint
 from threading import Thread, Lock, Event
+import numpy as np
 
 mutex = Lock()
 
@@ -74,7 +75,7 @@ class Barber:
         print('Customer-{0} is sitting in the barber chair.'.format(customer))
         print('{0} is cutting Customer-{1}\'s hair.'.format(self.name, customer))
         self.barberChair = True
-        durationOfHaircut = randint(5, 25)
+        durationOfHaircut = np.random.zipf(2)
         time.sleep(durationOfHaircut)
         print('Customer-{0}\'s haircut is completed in {1} seconds.'.format(customer, durationOfHaircut))
         self.barberChair = False
@@ -82,7 +83,7 @@ class Barber:
 
 def generate_random_number():
     while len(customers) > 0:
-        if randint(0, 10 ** 6) % 4 == 0:
+        if randint(0, 10 ** 6) % 7 == 0:
             # New customer enters the barbershop
             barberShop.enterBarberShop(customers.pop())
         time.sleep(1)
