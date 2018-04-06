@@ -74,10 +74,9 @@ class BarberShop:
 
 class Barber:
 
-    def __init__(self, name, durationOfHaircut):
+    def __init__(self, name):
         self.name = name
         self.barberWorkingEvent = Event()
-        self.durationOfHaircut = durationOfHaircut
         self.barberChair = False  # Assigns barber chair as occupied (True) or unoccupied (False)
 
     def sleep(self):
@@ -94,8 +93,10 @@ class Barber:
         print('Customer-{0} is sitting in {1}\'s chair.'.format(customer, self.name))
         print('{0} is cutting Customer-{1}\'s hair.'.format(self.name, customer))
         self.barberChair = True
-        time.sleep(self.durationOfHaircut)
-        print('Customer-{0}\'s haircut is completed by {1}.'.format(customer, self.name))
+        durationOfHaircut = randint(5, 25)
+        time.sleep(durationOfHaircut)
+        print('Customer-{0}\'s haircut is completed in {1} seconds by {2}.'.format(customer, durationOfHaircut,
+                                                                                   self.name))
         self.barberChair = False
 
 
@@ -108,15 +109,14 @@ def generate_random_number():
 
 
 if __name__ == '__main__':
-    durationOfHaircut = int(input("Enter haircut duration (P): "))
     numberOfSeats = int(input("Enter number of regular chairs (N) : "))
 
     # customer list
     customers = list(range(6))
     customers.reverse()
 
-    SweenyTodd = Barber('Sweeny Todd', durationOfHaircut)
-    DavyCollins = Barber('Davy Collins', durationOfHaircut)
+    SweenyTodd = Barber('Sweeny Todd')
+    DavyCollins = Barber('Davy Collins')
 
     barberShop = BarberShop(SweenyTodd, DavyCollins, numberOfSeats)
     barberShop.openShop()
