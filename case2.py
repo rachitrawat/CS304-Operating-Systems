@@ -1,10 +1,3 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Wed Apr  4 18:55:27 2018
-
-@author: RudradeepGuha
-"""
-
 import time
 from random import randint
 from threading import Thread, Lock, Event
@@ -16,8 +9,9 @@ enterFlag = None
 class BarberShop:
     waitingCustomers = []
 
-    def __init__(self, barber, numberOfSeats):
+    def __init__(self, barber, barber2, numberOfSeats):
         self.barber = barber
+        self.barber2 = barber2
         self.numberOfSeats = numberOfSeats
 
     def openShop(self):
@@ -48,13 +42,14 @@ class BarberShop:
             self.waitingCustomers.append(c)
             mutex.release()
             self.barber.wakeUp()
-        # If someone is in the barber chair and there are seats left in the waiting room
+        # No seats in waiting room
         elif len(self.waitingCustomers) == self.numberOfSeats:
             print('Barbershop is full, Customer-{0} has left.'.format(customer))
             mutex.release()
-        # No seats in waiting room
+        # If someone is in the barber chair and there are seats left in the waiting room
         else:
-            print('{0} is busy, Customer-{1} is waiting on chair-{2}.'.format(self.barber.name, customer, len(self.waitingCustomers)))
+            print('{0} is busy, Customer-{1} is waiting on chair-{2}.'.format(self.barber.name, customer,
+                                                                              len(self.waitingCustomers)))
             self.waitingCustomers.append(c)
             mutex.release()
             self.barber.wakeUp()
@@ -66,7 +61,7 @@ class Barber:
     def __init__(self, name, durationOfHaircut):
         self.name = name
         self.durationOfHaircut = durationOfHaircut
-        self.barberChair = False    # Assigns barber chair as occupied (True) or unoccupied (False)
+        self.barberChair = False  # Assigns barber chair as occupied (True) or unoccupied (False)
 
     def sleep(self):
         self.barberWorkingEvent.wait()
@@ -110,7 +105,9 @@ if __name__ == '__main__':
     customers.reverse()
 
     SweenyTodd = Barber('Sweeny Todd', durationOfHaircut)
-    barberShop = BarberShop(SweenyTodd, numberOfSeats)
+    DavyCollins = Barber('Davy Collins', durationOfHaircut)
+
+    barberShop = BarberShop(SweenyTodd, DavyCollins, numberOfSeats)
     barberShop.openShop()
 
     while (len(customers) > 0):
