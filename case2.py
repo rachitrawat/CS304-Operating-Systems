@@ -2,7 +2,8 @@ import time
 from random import randint
 from threading import Thread, Lock, Event
 
-mutex = Lock()
+mutex1 = Lock()
+mutex2 = Lock()
 enterFlag = None
 
 
@@ -15,11 +16,13 @@ class BarberShop:
         self.numberOfSeats = numberOfSeats
 
     def openShop(self):
-        print('{0} has opened the Barbershop'.format(self.barber.name))
-        workingThread = Thread(target=self.barberGoToWork)
+        print('{0} has opened the Barbershop!'.format(self.barber.name))
+        workingThread = Thread(target=self.barberGoToWork, args=(self.barber, mutex1))
         workingThread.start()
+        workingThread2 = Thread(target=self.barberGoToWork, args=(self.barber2, mutex2))
+        workingThread2.start()
 
-    def barberGoToWork(self):
+    def barberGoToWork(self, barber, mutex):
         while True:
             mutex.acquire()
 
@@ -27,39 +30,54 @@ class BarberShop:
                 c = self.waitingCustomers[0]
                 del self.waitingCustomers[0]
                 mutex.release()
-                self.barber.cutHair(c)
+                barber.cutHair(c)
             else:
                 mutex.release()
-                print('{0} is sleeping.'.format(self.barber.name))
-                self.barber.sleep()
-                print('Customer-{0} has woken up {1}.'.format(self.waitingCustomers[0], self.barber.name))
+                print('{0} is sleeping...'.format(barber.name))
+                barber.sleep()
+                print('Customer-{0} has woken up {1}.'.format(self.waitingCustomers[0], barber.name))
 
     def enterBarberShop(self, customer):
-        mutex.acquire()
-        print('Customer-{0} has arrived.'.format(customer))
-        # If there is no one in the barber chair
+
+        # If there is no one in the barber1 chair, SET barber = barber1
         if self.barber.barberChair == False:
+            mutex1.acquire()
+            mutex = mutex1
+            barber = self.barber
+        # If there is no one in the barber2 chair, SET barber = barber2
+        elif self.barber2.barberChair == False:
+            mutex2.acquire()
+            mutex = mutex2
+            barber = self.barber2
+        # If both barber are busy, set barber = barber1
+        else:
+            mutex1.acquire()
+            mutex = mutex1
+            barber = self.barber
+
+        # If no one is sitting on barber chair
+        if barber.barberChair == False:
             self.waitingCustomers.append(c)
             mutex.release()
-            self.barber.wakeUp()
+            barber.wakeUp()
         # No seats in waiting room
         elif len(self.waitingCustomers) == self.numberOfSeats:
             print('Barbershop is full, Customer-{0} has left.'.format(customer))
             mutex.release()
         # If someone is in the barber chair and there are seats left in the waiting room
         else:
-            print('{0} is busy, Customer-{1} is waiting on chair-{2}.'.format(self.barber.name, customer,
-                                                                              len(self.waitingCustomers)))
+            print('Both barbers are busy, Customer-{1} is waiting on chair-{2}.'.format(barber.name, customer,
+                                                                                        len(self.waitingCustomers)))
             self.waitingCustomers.append(c)
             mutex.release()
-            self.barber.wakeUp()
+            barber.wakeUp()
 
 
 class Barber:
-    barberWorkingEvent = Event()
 
     def __init__(self, name, durationOfHaircut):
         self.name = name
+        self.barberWorkingEvent = Event()
         self.durationOfHaircut = durationOfHaircut
         self.barberChair = False  # Assigns barber chair as occupied (True) or unoccupied (False)
 
@@ -74,11 +92,11 @@ class Barber:
         # Set barber as busy
         self.barberWorkingEvent.clear()
 
-        print('Customer-{0} is sitting in the barber chair.'.format(customer))
+        print('Customer-{0} is sitting in the {1} chair.'.format(customer, self.name))
         print('{0} is cutting Customer-{1}\'s hair.'.format(self.name, customer))
         self.barberChair = True
         time.sleep(self.durationOfHaircut)
-        print('Customer-{0}\'s haircut is complete.'.format(customer))
+        print('Customer-{0}\'s haircut is completed by {1}.'.format(customer, self.name))
         self.barberChair = False
 
 
