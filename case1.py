@@ -38,7 +38,7 @@ class BarberShop:
         print('Customer-{0} has arrived.'.format(customer))
         # If there is no one in the barber chair
         if self.barber.barberChair == False:
-            self.waitingCustomers.append(c)
+            self.waitingCustomers.append(customer)
             mutex.release()
             self.barber.wakeUp()
         # No seats in waiting room
@@ -49,7 +49,7 @@ class BarberShop:
         else:
             print('{0} is busy, Customer-{1} is waiting on chair-{2}.'.format(self.barber.name, customer,
                                                                               len(self.waitingCustomers)))
-            self.waitingCustomers.append(c)
+            self.waitingCustomers.append(customer)
             mutex.release()
             self.barber.wakeUp()
 
@@ -82,22 +82,16 @@ class Barber:
 
 
 def generate_random_number():
-    while (True):
-        global enterFlag
-        enterFlag = randint(0, 10 ** 6) % 3
+    while len(customers) > 0:
+        if randint(0, 10 ** 6) % 3 == 0:
+            # New customer enters the barbershop
+            barberShop.enterBarberShop(customers.pop())
         time.sleep(1)
 
 
 if __name__ == '__main__':
     durationOfHaircut = int(input("Enter haircut duration (P): "))
     numberOfSeats = int(input("Enter number of regular chairs (N) : "))
-
-    # start random number generator thread
-    rand_gen = Thread(target=generate_random_number)
-    # allow main program to exit
-    rand_gen.daemon = True
-    # run thread
-    rand_gen.start()
 
     # customer list
     customers = list(range(6))
@@ -107,9 +101,9 @@ if __name__ == '__main__':
     barberShop = BarberShop(SweenyTodd, numberOfSeats)
     barberShop.openShop()
 
-    while (len(customers) > 0):
-        time.sleep(1)
-        if enterFlag == 0:
-            c = customers.pop()
-            # New customer enters the barbershop
-            barberShop.enterBarberShop(c)
+    # start random number generator thread
+    rand_gen = Thread(target=generate_random_number)
+    # allow main program to exit
+    rand_gen.daemon = True
+    # run thread
+    rand_gen.start()
