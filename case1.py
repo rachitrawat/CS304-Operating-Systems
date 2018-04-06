@@ -3,7 +3,6 @@ from random import randint
 from threading import Thread, Lock, Event
 
 mutex = Lock()
-enterFlag = None
 
 
 class BarberShop:

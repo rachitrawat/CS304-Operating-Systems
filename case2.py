@@ -4,7 +4,6 @@ from threading import Thread, Lock, Event
 
 mutex1 = Lock()
 mutex2 = Lock()
-enterFlag = None
 
 
 class BarberShop:
