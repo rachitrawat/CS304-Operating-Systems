@@ -41,13 +41,14 @@ class BarberShop:
             self.waitingCustomers.append(c)
             mutex.release()
             self.barber.wakeUp()
-        # If someone is in the barber chair and there are seats left in the waiting room
+        # No seats in waiting room
         elif len(self.waitingCustomers) == self.numberOfSeats:
             print('Barbershop is full, Customer-{0} has left.'.format(customer))
             mutex.release()
-        # No seats in waiting room
+        # If someone is in the barber chair and there are seats left in the waiting room
         else:
-            print('{0} is busy, Customer-{1} is waiting on chair-{2}.'.format(self.barber.name, customer, len(self.waitingCustomers)))
+            print('{0} is busy, Customer-{1} is waiting on chair-{2}.'.format(self.barber.name, customer,
+                                                                              len(self.waitingCustomers)))
             self.waitingCustomers.append(c)
             mutex.release()
             self.barber.wakeUp()
@@ -59,7 +60,7 @@ class Barber:
     def __init__(self, name, durationOfHaircut):
         self.name = name
         self.durationOfHaircut = durationOfHaircut
-        self.barberChair = False    # Assigns barber chair as occupied (True) or unoccupied (False)
+        self.barberChair = False  # Assigns barber chair as occupied (True) or unoccupied (False)
 
     def sleep(self):
         self.barberWorkingEvent.wait()
