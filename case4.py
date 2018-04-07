@@ -102,7 +102,7 @@ class Barber:
 
 def generate_random_number():
     while len(customers) > 0:
-        if randint(0, 10 ** 6) % 4 == 0:
+        if randint(10 ** 5 + 1, 10 ** 6) % 4 == 0:
             # New customer enters the barbershop
             barberShop.enterBarberShop(customers.pop())
         time.sleep(1)
