@@ -28,8 +28,7 @@ def _main():
         # ignore filename = .goutputstream* ['IN_CLOSE_WRITE'] is sufficient
         if filename != '' and ".goutputstream" not in filename and type_names in log_events_list:
             log = "FILENAME=[{}] EVENT_TYPES={}".format(filename, type_names)
-            print(log.format(
-                path, filename, type_names))
+            print(log.format(filename, type_names))
 
             # send log to server
             s.send(log.encode('ascii'))
