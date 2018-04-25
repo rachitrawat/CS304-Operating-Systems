@@ -1,4 +1,5 @@
 import inotify.adapters
+from datetime import datetime
 
 # Only log events the following events:
 # file moved to/from
@@ -16,8 +17,8 @@ def _main():
 
         # ignore filename = .goutputstream* ['IN_CLOSE_WRITE'] is sufficient
         if filename != '' and ".goutputstream" not in filename and type_names in log_events_list:
-            print("PATH=[{}] FILENAME=[{}] EVENT_TYPES={}".format(
-                path, filename, type_names))
+            print("PATH=[{}] FILENAME=[{}] EVENT_TYPES={} TIME={}".format(
+                path, filename, type_names, datetime.now().time()))
 
 
 if __name__ == '__main__':
