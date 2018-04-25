@@ -6,7 +6,7 @@ import inotify.adapters
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
 # connection to hostname on the port
-s.connect((socket.gethostname(), 2348))
+s.connect((socket.gethostname(), 2398))
 
 # Only log events the following events:
 # file moved to/from
@@ -27,11 +27,12 @@ def _main():
 
         # ignore filename = .goutputstream* ['IN_CLOSE_WRITE'] is sufficient
         if filename != '' and ".goutputstream" not in filename and type_names in log_events_list:
-            log = "FILENAME=[{}] EVENT_TYPES={}".format(filename, type_names)
-            print(log.format(filename, type_names))
+            log_display = "FILENAME=[{}];EVENT_TYPE={}".format(filename, type_names)
+            log_send = "{};{}".format(filename, ''.join(type_names))
+            print(log_display.format(filename, type_names))
 
             # send log to server
-            s.send(log.encode('ascii'))
+            s.send(log_send.encode('ascii'))
 
 
 if __name__ == '__main__':
