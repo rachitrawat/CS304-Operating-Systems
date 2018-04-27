@@ -1,4 +1,5 @@
 import socket
+import os
 
 import inotify.adapters
 
@@ -28,7 +29,8 @@ def _main():
         # ignore filename = .goutputstream* ['IN_CLOSE_WRITE'] is sufficient
         if filename != '' and ".goutputstream" not in filename and type_names in log_events_list:
             log_display = "FILENAME=[{}];EVENT_TYPE={}".format(filename, type_names)
-            log_send = "{};{}".format(filename, ''.join(type_names))
+            file_size = int(os.stat("watch_folder/" + filename).st_size)
+            log_send = "{};{};{}".format(filename, ''.join(type_names), file_size)
             print(log_display.format(filename, type_names))
 
             # send log to server
@@ -37,15 +39,19 @@ def _main():
             if type_names == ['IN_CLOSE_WRITE'] or type_names == ['IN_MOVED_TO']:
                 f = open("watch_folder/" + filename, 'rb')
                 print('Uploading file %s... ' % filename)
-                l = f.read(1024)
-                while (l):
-                    s.send(l)
+
+                while file_size >= 1024:
                     l = f.read(1024)
+                    s.send(l)
+                    file_size -= 1024
+
+                if file_size > 0:
+                    l = f.read(file_size)
+                    s.send(l)
+
                 f.close()
                 print("Upload finished of %s!" % filename)
-                s.shutdown(socket.SHUT_WR)
                 print(s.recv(1024).decode('ascii'))
-                s.close()
 
 
 if __name__ == '__main__':

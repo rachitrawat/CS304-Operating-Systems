@@ -34,18 +34,22 @@ while True:
         sync_query = client_log.split(';')
         file_name = sync_query[0]
         event_name = sync_query[1]
-        print(file_name, event_name)
+        file_size = int(sync_query[2])
+        print(file_name, event_name, file_size)
         update(file_name, event_name)
 
         if event_name == 'IN_MOVED_TO' or event_name == 'IN_CLOSE_WRITE':
             print("Receiving file %s..." % file_name)
             f = open(file_name, 'wb')
-            l = clientsocket.recv(1024)
-            while (l):
-                f.write(l)
+
+            while file_size >= 1024:
                 l = clientsocket.recv(1024)
+                f.write(l)
+                file_size -= 1024
+            if file_size > 0:
+                l = clientsocket.recv(file_size)
+                f.write(l)
+
             f.close()
             print("File %s synced!" % file_name)
             clientsocket.send(("Server: Sync Successful!").encode('ascii'))
-            clientsocket.close()
-            break
