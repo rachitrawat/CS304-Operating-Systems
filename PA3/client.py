@@ -7,7 +7,7 @@ import inotify.adapters
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
 # connection to hostname on the port
-s.connect((socket.gethostname(), 3000))
+s.connect((socket.gethostname(), 3001))
 
 # Only log events the following events:
 # file moved to/from
@@ -16,47 +16,55 @@ log_events_list = [['IN_MOVED_TO'], ['IN_CLOSE_WRITE'], ['IN_MOVED_FROM']]
 
 
 def _main():
-    # receive initial message from server
-    print("Connected: " + s.recv(1024).decode('ascii'))
+    # receive initial messages from server
+    print("Server: " + s.recv(1024).decode('ascii'))
 
-    i = inotify.adapters.Inotify()
+    choice = input()
+    s.send(choice.encode('ascii'))
 
-    i.add_watch('/home/su/PycharmProjects/Operating-Systems/PA3/watch_folder')
+    if choice == "1":
 
-    for event in i.event_gen(yield_nones=False):
-        (_, type_names, path, filename) = event
+        i = inotify.adapters.Inotify()
 
-        # ignore filename = .goutputstream* ['IN_CLOSE_WRITE'] is sufficient
-        if filename != '' and ".goutputstream" not in filename and type_names in log_events_list:
+        i.add_watch('/home/su/PycharmProjects/Operating-Systems/PA3/watch_folder')
 
-            file_size = 0
+        for event in i.event_gen(yield_nones=False):
+            (_, type_names, path, filename) = event
 
-            # don't calculate file size when event is FILE MOVED FROM
-            if type_names == ['IN_MOVED_FROM']:
-                log_send = "{};{}".format(filename, ''.join(type_names), file_size)
-            else:
-                file_size = int(os.stat("watch_folder/" + filename).st_size)
-                log_send = "{};{};{}".format(filename, ''.join(type_names), file_size)
+            # ignore filename = .goutputstream* ['IN_CLOSE_WRITE'] is sufficient
+            if filename != '' and ".goutputstream" not in filename and type_names in log_events_list:
 
-            # send log to server
-            s.send(log_send.encode('ascii'))
+                file_size = 0
 
-            if type_names == ['IN_CLOSE_WRITE'] or type_names == ['IN_MOVED_TO']:
-                f = open("watch_folder/" + filename, 'rb')
-                print('Uploading file %s... ' % filename)
+                # don't calculate file size when event is FILE MOVED FROM
+                if type_names == ['IN_MOVED_FROM']:
+                    log_send = "{};{}".format(filename, ''.join(type_names), file_size)
+                else:
+                    file_size = int(os.stat("watch_folder/" + filename).st_size)
+                    log_send = "{};{};{}".format(filename, ''.join(type_names), file_size)
 
-                while file_size >= 1024:
-                    l = f.read(1024)
-                    s.send(l)
-                    file_size -= 1024
+                # send log to server
+                s.send(log_send.encode('ascii'))
 
-                if file_size > 0:
-                    l = f.read(file_size)
-                    s.send(l)
+                if type_names == ['IN_CLOSE_WRITE'] or type_names == ['IN_MOVED_TO']:
+                    f = open("watch_folder/" + filename, 'rb')
+                    print('Uploading file %s... ' % filename)
 
-                f.close()
-                print("Upload finished of %s!" % filename)
-                print(s.recv(1024).decode('ascii'))
+                    while file_size >= 1024:
+                        l = f.read(1024)
+                        s.send(l)
+                        file_size -= 1024
+
+                    if file_size > 0:
+                        l = f.read(file_size)
+                        s.send(l)
+
+                    f.close()
+                    print("Upload finished of %s!" % filename)
+                    print(s.recv(1024).decode('ascii'))
+
+    elif choice == "2":
+        print("Server: " + s.recv(1024).decode('ascii'))
 
 
 if __name__ == '__main__':
