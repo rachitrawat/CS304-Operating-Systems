@@ -3,7 +3,7 @@ import socket
 # create an INET, STREAMing server socket
 serversocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 # bind the socket to a public host, and a port
-serversocket.bind((socket.gethostname(), 2600))
+serversocket.bind((socket.gethostname(), 2800))
 # become a server socket and queue up to 5 requests
 serversocket.listen(5)
 print("Server is running!")
@@ -30,22 +30,22 @@ while True:
     # send welcome message
     clientsocket.send(("Welcome to the server!".encode('ascii')))
     while True:
-        # client_log = clientsocket.recv(1024).decode('ascii')
-        # sync_query = client_log.split(';')
-        # file_name = sync_query[0]
-        # event_name = sync_query[1]
-        # print(file_name, event_name)
-        # update(file_name, event_name)
-        event_name = "IN_MOVED_TO"
-        if event_name == 'IN_MOVED_TO' or event_name == 'IN_CLOSE_WRITE':
-            print("Receiving...")
-            f = open("os.pdf", 'wb')
-            l = clientsocket.recv(1024)
-            while (l):
-                print("Receiving...")
-                f.write(l)
+        client_log = clientsocket.recv(1024).decode('ascii')
+        if client_log != '':
+            sync_query = client_log.split(';')
+            file_name = sync_query[0]
+            event_name = sync_query[1]
+            print(file_name, event_name)
+            update(file_name, event_name)
+
+            if event_name == 'IN_MOVED_TO' or event_name == 'IN_CLOSE_WRITE':
+                print("Receiving file %s..." % file_name)
+                f = open(file_name, 'wb')
                 l = clientsocket.recv(1024)
-            f.close()
-            print("Done Receiving")
-            clientsocket.close()
-            break
+                while (l):
+                    f.write(l)
+                    l = clientsocket.recv(1024)
+                f.close()
+                print("File %s synced!" % s)
+            # clientsocket.close()
+            # break
