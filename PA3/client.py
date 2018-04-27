@@ -6,8 +6,8 @@ import inotify.adapters
 # create a socket object
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
-# connection to hostname on the port
-s.connect((socket.gethostname(), 3008))
+# connection to server on the port
+s.connect((socket.gethostname(), 3900))
 
 # Only log events the following events:
 # file moved to/from
@@ -82,6 +82,7 @@ def _main():
         s.send(file_ch.encode('ascii'))
         print("Server: " + s.recv(1024).decode('ascii'))
         s.close()
+
 
 if __name__ == '__main__':
     _main()

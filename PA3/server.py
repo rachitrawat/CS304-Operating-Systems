@@ -5,9 +5,13 @@ import time
 # create an INET, STREAMing server socket
 serversocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 # bind the socket to a public host, and a port
-serversocket.bind((socket.gethostname(), 3008))
+serversocket.bind((socket.gethostname(), 3900))
 # become a server socket and queue up to 5 requests
 serversocket.listen(5)
+
+# create a socket object
+server_as_client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+
 print("Server is running!")
 
 # initialize an index
@@ -29,7 +33,7 @@ def update(file_name, event_name):
 while True:
     # establish a connection
     clientsocket, addr = serversocket.accept()
-    print("Got a connection from %s" % str(addr))
+    print("Got a connection from! %s" % str(addr))
     # send welcome message
     clientsocket.send(("Welcome! Choose an option:\n1. Sync Files\n2. Re-download Files".encode('ascii')))
     choice = clientsocket.recv(8).decode('ascii')
@@ -69,8 +73,17 @@ while True:
         clientsocket.send((" ".join(index.keys()).encode('ascii')))
         file_ch = clientsocket.recv(100).decode('ascii')
         print("Sending requested file %s " % file_ch)
+        # todo send file
+        # connect to storage node
+        server_as_client_socket.connect((socket.gethostname(), 4002))
+        print("Connected to storage node!")
+        server_as_client_socket.send(("testname").encode('ascii'))
+        print("Downloading file from storage node...")
+        str_text = server_as_client_socket.recv(1024).decode('ascii')
         # wait a sec before sending to avoid buffer intermix
         time.sleep(1)
-        # todo send file
-        clientsocket.send("Dummy File".encode('ascii'))
+        server_as_client_socket.close()
+        print("Downloaded from storage node! Sending file to client...")
+        clientsocket.send(str_text.encode('ascii'))
+        print("File sent to client!")
         clientsocket.close()
