@@ -1,9 +1,10 @@
 import socket
+import os
 
 # create an INET, STREAMing server socket
 serversocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 # bind the socket to a public host, and a port
-serversocket.bind((socket.gethostname(), 2801))
+serversocket.bind((socket.gethostname(), 3000))
 # become a server socket and queue up to 5 requests
 serversocket.listen(5)
 print("Server is running!")
@@ -19,6 +20,7 @@ def update(file_name, event_name):
     elif event_name == 'IN_MOVED_FROM':
         try:
             del index[file_name]
+            os.remove(file_name)
         except KeyError:
             print("File %s does not exist in the index." % file_name)
 
@@ -34,13 +36,12 @@ while True:
         sync_query = client_log.split(';')
         file_name = sync_query[0]
         event_name = sync_query[1]
-        file_size = int(sync_query[2])
-        print(file_name, event_name, file_size)
         update(file_name, event_name)
 
         if event_name == 'IN_MOVED_TO' or event_name == 'IN_CLOSE_WRITE':
             print("Receiving file %s..." % file_name)
             f = open(file_name, 'wb')
+            file_size = int(sync_query[2])
 
             while file_size >= 1024:
                 l = clientsocket.recv(1024)

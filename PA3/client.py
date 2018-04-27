@@ -7,7 +7,7 @@ import inotify.adapters
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
 # connection to hostname on the port
-s.connect((socket.gethostname(), 2801))
+s.connect((socket.gethostname(), 3000))
 
 # Only log events the following events:
 # file moved to/from
@@ -28,10 +28,15 @@ def _main():
 
         # ignore filename = .goutputstream* ['IN_CLOSE_WRITE'] is sufficient
         if filename != '' and ".goutputstream" not in filename and type_names in log_events_list:
-            log_display = "FILENAME=[{}];EVENT_TYPE={}".format(filename, type_names)
-            file_size = int(os.stat("watch_folder/" + filename).st_size)
-            log_send = "{};{};{}".format(filename, ''.join(type_names), file_size)
-            print(log_display.format(filename, type_names))
+
+            file_size = 0
+
+            # don't calculate file size when event is FILE MOVED FROM
+            if type_names == ['IN_MOVED_FROM']:
+                log_send = "{};{}".format(filename, ''.join(type_names), file_size)
+            else:
+                file_size = int(os.stat("watch_folder/" + filename).st_size)
+                log_send = "{};{};{}".format(filename, ''.join(type_names), file_size)
 
             # send log to server
             s.send(log_send.encode('ascii'))
