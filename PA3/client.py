@@ -1,13 +1,13 @@
 import socket
 import os
-
+import time
 import inotify.adapters
 
 # create a socket object
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
 # connection to hostname on the port
-s.connect((socket.gethostname(), 3002))
+s.connect((socket.gethostname(), 3007))
 
 # Only log events the following events:
 # file moved to/from
@@ -17,7 +17,7 @@ log_events_list = [['IN_MOVED_TO'], ['IN_CLOSE_WRITE'], ['IN_MOVED_FROM']]
 
 def _main():
     # receive initial messages from server
-    print("Server: " + s.recv(1024).decode('ascii'))
+    print("Server: " + s.recv(100).decode('ascii'))
 
     choice = input()
     s.send(choice.encode('ascii'))
@@ -45,6 +45,8 @@ def _main():
 
                 # send log to server
                 s.send(log_send.encode('ascii'))
+                # let client finish sending log
+                time.sleep(1)
 
                 if type_names == ['IN_CLOSE_WRITE'] or type_names == ['IN_MOVED_TO']:
                     f = open("watch_folder/" + filename, 'rb')
