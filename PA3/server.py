@@ -3,7 +3,7 @@ import socket
 # create an INET, STREAMing server socket
 serversocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 # bind the socket to a public host, and a port
-serversocket.bind((socket.gethostname(), 2398))
+serversocket.bind((socket.gethostname(), 2600))
 # become a server socket and queue up to 5 requests
 serversocket.listen(5)
 print("Server is running!")
@@ -15,11 +15,12 @@ index = {}
 def update(file_name, event_name):
     if event_name == 'IN_MOVED_TO' or event_name == 'IN_CLOSE_WRITE':
         index[file_name] = ""
+
     elif event_name == 'IN_MOVED_FROM':
         try:
             del index[file_name]
         except KeyError:
-            print("File %s does not exist in the index.", file_name)
+            print("File %s does not exist in the index." % file_name)
 
 
 while True:
@@ -29,10 +30,22 @@ while True:
     # send welcome message
     clientsocket.send(("Welcome to the server!".encode('ascii')))
     while True:
-        client_log = clientsocket.recv(1024).decode('ascii')
-        sync_query = client_log.split(';')
-        file_name = sync_query[0]
-        event_name = sync_query[1]
-        print(file_name, event_name)
-        update(file_name, event_name)
-        print(index)
+        # client_log = clientsocket.recv(1024).decode('ascii')
+        # sync_query = client_log.split(';')
+        # file_name = sync_query[0]
+        # event_name = sync_query[1]
+        # print(file_name, event_name)
+        # update(file_name, event_name)
+        event_name = "IN_MOVED_TO"
+        if event_name == 'IN_MOVED_TO' or event_name == 'IN_CLOSE_WRITE':
+            print("Receiving...")
+            f = open("os.pdf", 'wb')
+            l = clientsocket.recv(1024)
+            while (l):
+                print("Receiving...")
+                f.write(l)
+                l = clientsocket.recv(1024)
+            f.close()
+            print("Done Receiving")
+            clientsocket.close()
+            break

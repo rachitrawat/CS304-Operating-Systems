@@ -6,7 +6,7 @@ import inotify.adapters
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
 # connection to hostname on the port
-s.connect((socket.gethostname(), 2398))
+s.connect((socket.gethostname(), 2600))
 
 # Only log events the following events:
 # file moved to/from
@@ -32,7 +32,20 @@ def _main():
             print(log_display.format(filename, type_names))
 
             # send log to server
-            s.send(log_send.encode('ascii'))
+            # s.send(log_send.encode('ascii'))
+
+            if type_names == ['IN_CLOSE_WRITE'] or type_names == ['IN_MOVED_TO']:
+                print(filename)
+                f = open("watch_folder/" + filename, 'rb')
+                print('Sending...')
+                l = f.read(1024)
+                while (l):
+                    print('Sending...')
+                    s.send(l)
+                    l = f.read(1024)
+                f.close()
+                print("Done Sending")
+                s.shutdown(socket.SHUT_WR)
 
 
 if __name__ == '__main__':
