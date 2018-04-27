@@ -6,7 +6,7 @@ import inotify.adapters
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
 # connection to hostname on the port
-s.connect((socket.gethostname(), 2800))
+s.connect((socket.gethostname(), 2801))
 
 # Only log events the following events:
 # file moved to/from
@@ -44,6 +44,8 @@ def _main():
                 f.close()
                 print("Upload finished of %s!" % filename)
                 s.shutdown(socket.SHUT_WR)
+                print(s.recv(1024).decode('ascii'))
+                s.close()
 
 
 if __name__ == '__main__':
