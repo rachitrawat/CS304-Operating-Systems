@@ -4,7 +4,7 @@ import os
 # create an INET, STREAMing server socket
 serversocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 # bind the socket to a public host, and a port
-serversocket.bind((socket.gethostname(), 3001))
+serversocket.bind((socket.gethostname(), 3002))
 # become a server socket and queue up to 5 requests
 serversocket.listen(5)
 print("Server is running!")
@@ -31,7 +31,7 @@ while True:
     print("Got a connection from %s" % str(addr))
     # send welcome message
     clientsocket.send(("Welcome! Choose an option:\n1. Sync Files\n2. Re-download Files".encode('ascii')))
-    choice = clientsocket.recv(1024).decode('ascii')
+    choice = clientsocket.recv(8).decode('ascii')
 
     if choice == "1":
         while True:
@@ -42,7 +42,7 @@ while True:
             update(file_name, event_name)
 
             if event_name == 'IN_MOVED_TO' or event_name == 'IN_CLOSE_WRITE':
-                print("Receiving file %s..." % file_name)
+                print("\nReceiving file %s..." % file_name)
                 f = open(file_name, 'wb')
                 file_size = int(sync_query[2])
 

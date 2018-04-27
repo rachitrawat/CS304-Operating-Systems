@@ -7,7 +7,7 @@ import inotify.adapters
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
 # connection to hostname on the port
-s.connect((socket.gethostname(), 3001))
+s.connect((socket.gethostname(), 3002))
 
 # Only log events the following events:
 # file moved to/from
@@ -48,7 +48,7 @@ def _main():
 
                 if type_names == ['IN_CLOSE_WRITE'] or type_names == ['IN_MOVED_TO']:
                     f = open("watch_folder/" + filename, 'rb')
-                    print('Uploading file %s... ' % filename)
+                    print('\nUploading file %s... ' % filename)
 
                     while file_size >= 1024:
                         l = f.read(1024)
@@ -62,6 +62,7 @@ def _main():
                     f.close()
                     print("Upload finished of %s!" % filename)
                     print(s.recv(1024).decode('ascii'))
+
 
     elif choice == "2":
         print("Server: " + s.recv(1024).decode('ascii'))
