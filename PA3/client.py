@@ -7,12 +7,22 @@ import inotify.adapters
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
 # connection to hostname on the port
-s.connect((socket.gethostname(), 3007))
+s.connect((socket.gethostname(), 3008))
 
 # Only log events the following events:
 # file moved to/from
 # file modified
 log_events_list = [['IN_MOVED_TO'], ['IN_CLOSE_WRITE'], ['IN_MOVED_FROM']]
+
+import atexit
+
+
+def exit_handler():
+    print("Closing Socket!")
+    s.close()
+
+
+atexit.register(exit_handler)
 
 
 def _main():

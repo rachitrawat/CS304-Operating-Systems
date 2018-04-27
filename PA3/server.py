@@ -4,7 +4,7 @@ import os
 # create an INET, STREAMing server socket
 serversocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 # bind the socket to a public host, and a port
-serversocket.bind((socket.gethostname(), 3007))
+serversocket.bind((socket.gethostname(), 3008))
 # become a server socket and queue up to 5 requests
 serversocket.listen(5)
 print("Server is running!")
@@ -36,6 +36,11 @@ while True:
     if choice == "1":
         while True:
             client_log = clientsocket.recv(100).decode('ascii')
+            if client_log == '':
+                print("Client disconnected!")
+                clientsocket.close()
+                break
+
             sync_query = client_log.split(';')
             file_name = sync_query[0]
             event_name = sync_query[1]
