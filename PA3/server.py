@@ -1,5 +1,6 @@
 import socket
 import os
+import time
 
 # create an INET, STREAMing server socket
 serversocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -66,3 +67,10 @@ while True:
     elif choice == "2":
         print("Sending index...")
         clientsocket.send((" ".join(index.keys()).encode('ascii')))
+        file_ch = clientsocket.recv(100).decode('ascii')
+        print("Sending requested file %s " % file_ch)
+        # wait a sec before sending to avoid buffer intermix
+        time.sleep(1)
+        # todo send file
+        clientsocket.send("Dummy File".encode('ascii'))
+        clientsocket.close()

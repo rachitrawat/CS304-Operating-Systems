@@ -77,8 +77,11 @@ def _main():
 
 
     elif choice == "2":
+        print("Server file index: " + s.recv(1024).decode('ascii'))
+        file_ch = input("Enter file name to dowload: ")
+        s.send(file_ch.encode('ascii'))
         print("Server: " + s.recv(1024).decode('ascii'))
-
+        s.close()
 
 if __name__ == '__main__':
     _main()
