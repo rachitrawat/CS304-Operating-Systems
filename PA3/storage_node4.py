@@ -41,7 +41,7 @@ while True:
     # server wants to retrieve file
     elif req_type == "2":
         print("Sending file %s to server..." % filename)
-        f = open("storage_node_1/" + filename, 'rb')
+        f = open("storage_node_4/" + filename, 'rb')
 
         while file_size >= 1024:
             l = f.read(1024)
