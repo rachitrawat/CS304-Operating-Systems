@@ -5,7 +5,7 @@ import time
 # create an INET, STREAMing server socket
 serversocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 # bind the socket to a public host, and a port
-serversocket.bind((socket.gethostname(), 3901))
+serversocket.bind((socket.gethostname(), 3902))
 # become a server socket and queue up to 5 requests
 serversocket.listen(5)
 
@@ -63,7 +63,7 @@ while True:
 
     elif choice == "2":
         print("Sending index...")
-        clientsocket.send((" ".join(index.keys()).encode('ascii')))
+        clientsocket.send(("\n".join(index.keys()).encode('ascii')))
         file_ch = clientsocket.recv(100).decode('ascii')
         print("Sending requested file %s " % file_ch)
         # todo send file

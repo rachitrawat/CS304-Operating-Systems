@@ -7,7 +7,7 @@ import inotify.adapters
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
 # connection to server on the port
-s.connect((socket.gethostname(), 3901))
+s.connect((socket.gethostname(), 3902))
 
 # Only log events the following events:
 # files moved in/modified
@@ -32,6 +32,7 @@ def _main():
     s.send(choice.encode('ascii'))
 
     if choice == "1":
+        print("Tracking watch_folder...")
 
         i = inotify.adapters.Inotify()
 
@@ -72,8 +73,8 @@ def _main():
 
 
     elif choice == "2":
-        print("Server file index: " + s.recv(1024).decode('ascii'))
-        file_ch = input("Enter file name to dowload: ")
+        print("Server file index: \n" + s.recv(1024).decode('ascii'))
+        file_ch = input("\nEnter file name to download: ")
         s.send(file_ch.encode('ascii'))
         print("Server: " + s.recv(1024).decode('ascii'))
         s.close()
