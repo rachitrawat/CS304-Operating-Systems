@@ -19,14 +19,14 @@ while True:
     # receive request type
     server_log = serversocket.recv(100).decode('ascii')
     sync_query = server_log.split(';')
-    file_name = sync_query[0]
+    filename = sync_query[0]
     file_size = int(sync_query[1])
     req_type = sync_query[2]
 
     # server wants to upload file
     if req_type == "1":
-        print("Receiving file %s from server..." % file_name)
-        f = open("storage_node_1/" + file_name, 'wb')
+        print("Receiving file %s from server..." % filename)
+        f = open("storage_node_1/" + filename, 'wb')
 
         while file_size >= 1024:
             l = serversocket.recv(1024)
@@ -37,12 +37,24 @@ while True:
             f.write(l)
 
         f.close()
-        print("File %s synced!" % file_name)
+        print("File %s synced!" % filename)
 
     # server wants to retrieve file
     elif req_type == "2":
-        print("Sending file %s to server...")
-        # serversocket.send((file_name).encode('ascii'))()
+        print("Sending file %s to server..." % filename)
+        f = open("storage_node_1/" + filename, 'rb')
+
+        while file_size >= 1024:
+            l = f.read(1024)
+            serversocket.send(l)
+            file_size -= 1024
+
+        if file_size > 0:
+            l = f.read(file_size)
+            serversocket.send(l)
+
+        f.close()
+        print("File %s sent to server!" % filename)
 
     serversocket.close()
     print("Operation done! Disconnected from server.")
