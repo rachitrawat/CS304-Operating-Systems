@@ -5,7 +5,7 @@ import time
 # create an INET, STREAMing server socket
 serversocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 # bind the socket to a public host, and a port
-serversocket.bind((socket.gethostname(), 3905))
+serversocket.bind((socket.gethostname(), 3909))
 # become a server socket and queue up to 5 requests
 serversocket.listen(5)
 
@@ -101,6 +101,7 @@ while True:
     # establish a connection
     clientsocket, addr = serversocket.accept()
     print("\nGot a connection from! %s" % str(addr))
+
     # send welcome message
     clientsocket.send(("Welcome! Choose an option:\n1. Sync Files\n2. Re-download Files".encode('ascii')))
     choice = clientsocket.recv(8).decode('ascii')
@@ -151,13 +152,24 @@ while True:
                     print("Client disconnected!")
                     clientsocket.close()
                     break
-                # Retrieve from storage
-                retrieve_from_storage(file_choice)
-                # send file size
-                file_size = int(index[file_choice][1])
-                clientsocket.send(str(file_size).encode('ascii'))
+
+                if file_choice not in index:
+                    print("File %s not in index!" % file_choice)
+                    log_send = "{};{}".format("File " + file_choice + " not in index! Try again.", "0")
+                else:
+                    # Retrieve from storage
+                    retrieve_from_storage(file_choice)
+                    file_size = int(index[file_choice][1])
+                    # send file size
+                    log_send = "{};{}".format(file_size, "1")
+
+                clientsocket.send(log_send.encode('ascii'))
                 # wait for server to finish sending log
                 time.sleep(1)
+
+                if file_choice not in index:
+                    continue
+
                 print("Sending file %s to client..." % file_choice)
                 f = open("server_tmp/" + file_choice, 'rb')
 
@@ -183,3 +195,8 @@ while True:
                 print("Client disconnected!")
                 clientsocket.close()
                 break
+
+    else:
+        print("Invalid choice by client.")
+        print("Client disconnected!")
+        clientsocket.close()

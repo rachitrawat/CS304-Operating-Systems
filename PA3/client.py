@@ -7,7 +7,7 @@ import inotify.adapters
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
 # connection to server on the port
-s.connect((socket.gethostname(), 3905))
+s.connect((socket.gethostname(), 3909))
 
 # Only log events the following events:
 # files moved in/modified
@@ -76,28 +76,38 @@ def _main():
         while True:
             server_log = s.recv(1024).decode('ascii')
             sync_query = server_log.split(';')
-            flag = sync_query[1]
             response = sync_query[0]
+            flag = sync_query[1]
 
             if flag == "1":
                 print("\nServer file index:\n" + response)
                 file_choice = input("\nEnter file name to download: ")
                 s.send(file_choice.encode('ascii'))
-                # receive file size
-                file_size = int(s.recv(100).decode('ascii'))
+                # receive file log
+                server_log = s.recv(1024).decode('ascii')
+                sync_query = server_log.split(';')
+                response = sync_query[0]
+                flag = sync_query[1]
 
-                f = open("download_folder/" + file_choice, 'wb')
+                if flag == "1":
+                    print("Downloading file %s..." % file_choice)
+                    file_size = int(response)
+                    f = open("download_folder/" + file_choice, 'wb')
 
-                while file_size >= 1024:
-                    l = s.recv(1024)
-                    f.write(l)
-                    file_size -= 1024
-                if file_size > 0:
-                    l = s.recv(file_size)
-                    f.write(l)
+                    while file_size >= 1024:
+                        l = s.recv(1024)
+                        f.write(l)
+                        file_size -= 1024
+                    if file_size > 0:
+                        l = s.recv(file_size)
+                        f.write(l)
 
-                f.close()
-                print("Download finished of %s!" % file_choice)
+                    f.close()
+                    print("Download finished of %s!" % file_choice)
+
+                else:
+                    print("\nServer: " + response)
+                    continue
 
             else:
                 print("\n" + response)
