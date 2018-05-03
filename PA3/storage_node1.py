@@ -27,7 +27,6 @@ while True:
     if req_type == "1":
         print("Receiving file %s from server..." % filename)
         f = open("storage_node_1/" + filename, 'wb')
-
         while file_size >= 1024:
             l = serversocket.recv(1024)
             f.write(l)

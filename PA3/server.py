@@ -5,7 +5,7 @@ import time
 # create an INET, STREAMing server socket
 serversocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 # bind the socket to a public host, and a port
-serversocket.bind((socket.gethostname(), 3901))
+serversocket.bind((socket.gethostname(), 3903))
 # become a server socket and queue up to 5 requests
 serversocket.listen(5)
 
@@ -29,7 +29,7 @@ def retrieve_from_storage(filename):
     server_as_client_socket.send((log_send).encode('ascii'))
     # wait for server to finish sending log
     time.sleep(1)
-    print("Retrieving file %s from storage node." % filename)
+    print("Retrieving file %s from storage node..." % filename)
     f = open("server_tmp/" + filename, 'wb')
     file_size = int(sync_query[2])
 
@@ -132,6 +132,7 @@ while True:
 
                 print("File %s received from client!" % filename)
 
+                file_size = int(sync_query[2])
                 file_name, file_extension = os.path.splitext(filename)
                 update_index(filename, file_extension, event_name, file_size)
                 clientsocket.send(("Server: Sync Successful!").encode('ascii'))
@@ -142,7 +143,6 @@ while True:
         file_choice = clientsocket.recv(100).decode('ascii')
         # Retrieve from storage
         retrieve_from_storage(file_choice)
-        # Send file to client
         # send file size
         file_size = int(index[file_choice][1])
         clientsocket.send(str(file_size).encode('ascii'))
@@ -163,5 +163,5 @@ while True:
         f.close()
 
         print("File %s sent to client!" % file_choice)
-        # os.remove("server_tmp/" + file_choice)
-        # print("Deleted file %s from server." % file_choice)
+        os.remove("server_tmp/" + file_choice)
+        print("Deleted file %s from server." % file_choice)

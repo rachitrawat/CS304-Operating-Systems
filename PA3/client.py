@@ -7,7 +7,7 @@ import inotify.adapters
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
 # connection to server on the port
-s.connect((socket.gethostname(), 3901))
+s.connect((socket.gethostname(), 3903))
 
 # Only log events the following events:
 # files moved in/modified
@@ -76,7 +76,6 @@ def _main():
         print("Server file index: \n" + s.recv(1024).decode('ascii'))
         file_choice = input("\nEnter file name to download: ")
         s.send(file_choice.encode('ascii'))
-        print("Server: " + s.recv(1024).decode('ascii'))
         # receive file size
         file_size = int(s.recv(100).decode('ascii'))
 
