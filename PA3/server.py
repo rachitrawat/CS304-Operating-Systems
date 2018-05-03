@@ -76,7 +76,7 @@ def upload_to_storage(filename, port_no, file_size):
     print("Upload finished of %s!" % filename)
     server_as_client_socket.close()
     print("Disconnected from storage node.")
-    #os.remove("server_tmp/" + filename)
+    os.remove("server_tmp/" + filename)
     print("Deleted file %s from server." % filename)
 
 
