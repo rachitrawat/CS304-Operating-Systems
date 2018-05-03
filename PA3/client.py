@@ -7,7 +7,7 @@ import inotify.adapters
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
 # connection to server on the port
-s.connect((socket.gethostname(), 3903))
+s.connect((socket.gethostname(), 3905))
 
 # Only log events the following events:
 # files moved in/modified
@@ -74,24 +74,37 @@ def _main():
 
     elif choice == "2":
         while True:
-            print("\nServer file index: \n" + s.recv(1024).decode('ascii'))
-            file_choice = input("\nEnter file name to download: ")
-            s.send(file_choice.encode('ascii'))
-            # receive file size
-            file_size = int(s.recv(100).decode('ascii'))
+            server_log = s.recv(1024).decode('ascii')
+            sync_query = server_log.split(';')
+            flag = sync_query[1]
+            response = sync_query[0]
 
-            f = open("download_folder/" + file_choice, 'wb')
+            if flag == "1":
+                print("\nServer file index:\n" + response)
+                file_choice = input("\nEnter file name to download: ")
+                s.send(file_choice.encode('ascii'))
+                # receive file size
+                file_size = int(s.recv(100).decode('ascii'))
 
-            while file_size >= 1024:
-                l = s.recv(1024)
-                f.write(l)
-                file_size -= 1024
-            if file_size > 0:
-                l = s.recv(file_size)
-                f.write(l)
+                f = open("download_folder/" + file_choice, 'wb')
 
-            f.close()
-            print("Download finished of %s!" % file_choice)
+                while file_size >= 1024:
+                    l = s.recv(1024)
+                    f.write(l)
+                    file_size -= 1024
+                if file_size > 0:
+                    l = s.recv(file_size)
+                    f.write(l)
+
+                f.close()
+                print("Download finished of %s!" % file_choice)
+
+            else:
+                print("\n" + response)
+                break
+
+    else:
+        print("\nInvalid choice.")
 
 
 if __name__ == '__main__':
