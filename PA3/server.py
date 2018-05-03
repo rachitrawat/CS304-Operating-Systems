@@ -50,9 +50,9 @@ def upload_to_storage(filename, port_no, file_size):
 def update_index(file_name, file_extension, event_name, file_size):
     if event_name == 'IN_MOVED_TO' or event_name == 'IN_CLOSE_WRITE':
         # index filename with port numbers of respective storage nodes
-        if file_extension == ".pdf" or file_extension == ".txt":
+        if file_extension == ".pdf" or file_extension == ".txt" or file_extension == ".py":
             port_no = 4001
-        elif file_extension == ".py":
+        elif file_extension == ".mp3":
             port_no = 4002
         else:
             port_no = 4003
