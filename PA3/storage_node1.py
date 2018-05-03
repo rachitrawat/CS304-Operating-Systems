@@ -14,9 +14,35 @@ index = {}
 while True:
     # establish a connection
     serversocket, addr = storagesocket1.accept()
-    print("Got a connection from server! %s" % str(addr))
-    file_name = serversocket.recv(1024).decode('ascii')
-    print("Sending file %s to server..." % file_name)
-    serversocket.send((file_name).encode('ascii'))
+    print("\nGot a connection from server! %s" % str(addr))
+
+    # receive request type
+    server_log = serversocket.recv(100).decode('ascii')
+    sync_query = server_log.split(';')
+    file_name = sync_query[0]
+    file_size = int(sync_query[1])
+    req_type = sync_query[2]
+
+    # server wants to upload file
+    if req_type == "1":
+        print("Receiving file %s from server..." % file_name)
+        f = open("storage_node_1/" + file_name, 'wb')
+
+        while file_size >= 1024:
+            l = serversocket.recv(1024)
+            f.write(l)
+            file_size -= 1024
+        if file_size > 0:
+            l = serversocket.recv(file_size)
+            f.write(l)
+
+        f.close()
+        print("File %s synced!" % file_name)
+
+    # server wants to retrieve file
+    elif req_type == "2":
+        print("Sending file %s to server...")
+        # serversocket.send((file_name).encode('ascii'))()
+
     serversocket.close()
-    print("File Sent! Disconnected from server %s!")
+    print("Operation done! Disconnected from server.")
