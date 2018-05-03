@@ -73,24 +73,25 @@ def _main():
 
 
     elif choice == "2":
-        print("Server file index: \n" + s.recv(1024).decode('ascii'))
-        file_choice = input("\nEnter file name to download: ")
-        s.send(file_choice.encode('ascii'))
-        # receive file size
-        file_size = int(s.recv(100).decode('ascii'))
+        while True:
+            print("\nServer file index: \n" + s.recv(1024).decode('ascii'))
+            file_choice = input("\nEnter file name to download: ")
+            s.send(file_choice.encode('ascii'))
+            # receive file size
+            file_size = int(s.recv(100).decode('ascii'))
 
-        f = open("download_folder/" + file_choice, 'wb')
+            f = open("download_folder/" + file_choice, 'wb')
 
-        while file_size >= 1024:
-            l = s.recv(1024)
-            f.write(l)
-            file_size -= 1024
-        if file_size > 0:
-            l = s.recv(file_size)
-            f.write(l)
+            while file_size >= 1024:
+                l = s.recv(1024)
+                f.write(l)
+                file_size -= 1024
+            if file_size > 0:
+                l = s.recv(file_size)
+                f.write(l)
 
-        f.close()
-        print("Download finished of %s!" % file_choice)
+            f.close()
+            print("Download finished of %s!" % file_choice)
 
 
 if __name__ == '__main__':

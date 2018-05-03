@@ -140,30 +140,35 @@ while True:
                 clientsocket.send(("Server: Sync Successful!").encode('ascii'))
 
     elif choice == "2":
-        print("Sending index...")
-        clientsocket.send(("\n".join(index.keys()).encode('ascii')))
-        file_choice = clientsocket.recv(100).decode('ascii')
-        # Retrieve from storage
-        retrieve_from_storage(file_choice)
-        # send file size
-        file_size = int(index[file_choice][1])
-        clientsocket.send(str(file_size).encode('ascii'))
-        # wait for server to finish sending log
-        time.sleep(1)
-        print("Sending file %s to client..." % file_choice)
-        f = open("server_tmp/" + file_choice, 'rb')
+        while True:
+            print("\nSending index...")
+            clientsocket.send(("\n".join(index.keys()).encode('ascii')))
+            file_choice = clientsocket.recv(100).decode('ascii')
+            if file_choice == '':
+                print("Client disconnected!")
+                clientsocket.close()
+                break
+            # Retrieve from storage
+            retrieve_from_storage(file_choice)
+            # send file size
+            file_size = int(index[file_choice][1])
+            clientsocket.send(str(file_size).encode('ascii'))
+            # wait for server to finish sending log
+            time.sleep(1)
+            print("Sending file %s to client..." % file_choice)
+            f = open("server_tmp/" + file_choice, 'rb')
 
-        while file_size >= 1024:
-            l = f.read(1024)
-            clientsocket.send(l)
-            file_size -= 1024
+            while file_size >= 1024:
+                l = f.read(1024)
+                clientsocket.send(l)
+                file_size -= 1024
 
-        if file_size > 0:
-            l = f.read(file_size)
-            clientsocket.send(l)
+            if file_size > 0:
+                l = f.read(file_size)
+                clientsocket.send(l)
 
-        f.close()
+            f.close()
 
-        print("File %s sent to client!" % file_choice)
-        os.remove("server_tmp/" + file_choice)
-        print("Deleted file %s from server." % file_choice)
+            print("File %s sent to client!" % file_choice)
+            os.remove("server_tmp/" + file_choice)
+            print("Deleted file %s from server." % file_choice)
