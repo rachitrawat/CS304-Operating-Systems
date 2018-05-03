@@ -5,7 +5,7 @@ import time
 # create an INET, STREAMing server socket
 serversocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 # bind the socket to a public host, and a port
-serversocket.bind((socket.gethostname(), 3909))
+serversocket.bind((socket.gethostname(), 3900))
 # become a server socket and queue up to 5 requests
 serversocket.listen(5)
 

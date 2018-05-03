@@ -7,7 +7,7 @@ import inotify.adapters
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
 # connection to server on the port
-s.connect((socket.gethostname(), 3909))
+s.connect((socket.gethostname(), 3900))
 
 # Only log events the following events:
 # files moved in/modified
