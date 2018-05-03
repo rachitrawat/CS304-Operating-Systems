@@ -3,10 +3,10 @@ import socket
 # create an INET, STREAMing server socket
 storagesocket1 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 # bind the socket to a public host, and a port
-storagesocket1.bind((socket.gethostname(), 4001))
+storagesocket1.bind((socket.gethostname(), 4003))
 # become a storage socket and queue up to 5 requests
 storagesocket1.listen(5)
-print("Storage node 1 is running!")
+print("Storage node 3 is running!")
 
 # initialize an index
 index = {}

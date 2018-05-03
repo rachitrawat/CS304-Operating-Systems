@@ -18,9 +18,18 @@ print("Server is running!")
 index = {}
 
 
-def update(file_name, event_name):
+def update_index(file_name, file_extension, event_name):
     if event_name == 'IN_MOVED_TO' or event_name == 'IN_CLOSE_WRITE':
-        index[file_name] = ""
+        # index filename with port numbers of respective storage nodes
+        if file_extension == ".pdf" or file_extension == ".txt":
+            index[file_name] = 4001
+            print("\nFile %s uploading to storage node 1..." % (file_name + file_extension))
+        elif file_extension == ".py":
+            index[file_name] = 4002
+            print("\nFile %s uploading to storage node 2..." % (file_name + file_extension))
+        else:
+            index[file_name] = 4003
+            print("\nFile %s uploading to storage node 3..." % (file_name + file_extension))
 
 
 while True:
@@ -42,7 +51,6 @@ while True:
             sync_query = client_log.split(';')
             file_name = sync_query[0]
             event_name = sync_query[1]
-            update(file_name, event_name)
 
             if event_name == 'IN_MOVED_TO' or event_name == 'IN_CLOSE_WRITE':
                 print("\nReceiving file %s..." % file_name)
@@ -59,6 +67,8 @@ while True:
 
                 f.close()
                 print("File %s synced!" % file_name)
+                file_name, file_extension = os.path.splitext(file_name)
+                update_index(file_name, file_extension, event_name)
                 clientsocket.send(("Server: Sync Successful!").encode('ascii'))
 
     elif choice == "2":
