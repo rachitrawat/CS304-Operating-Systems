@@ -5,7 +5,7 @@ import time
 # create an INET, STREAMing server socket
 serversocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 # bind the socket to a public host, and a port
-serversocket.bind((socket.gethostname(), 3901))
+serversocket.bind((socket.gethostname(), 3903))
 # become a server socket and queue up to 5 requests
 serversocket.listen(5)
 
@@ -107,18 +107,18 @@ while True:
 
     if choice == "1":
         while True:
-            client_log = clientsocket.recv(100).decode('ascii')
-            if client_log == '':
-                print("Client disconnected!")
-                clientsocket.close()
-                break
+            # recv file name size & file name
+            fname_size_b = clientsocket.recv(16).decode('ascii')
+            fname_size = int(fname_size_b, 2)
+            filename = clientsocket.recv(fname_size).decode('ascii')
 
-            sync_query = client_log.split(';')
-            filename = sync_query[0]
+            # recv file size
+            fsize_b = clientsocket.recv(32)
+            fsize = int(fsize_b, 2)
 
             print("\nReceiving file %s from client..." % filename)
             f = open("server_tmp/" + filename, 'wb')
-            file_size = int(sync_query[1])
+            file_size = fsize
 
             while file_size >= 1024:
                 l = clientsocket.recv(1024)
@@ -132,7 +132,7 @@ while True:
 
             print("File %s received from client!" % filename)
 
-            file_size = int(sync_query[1])
+            file_size = fsize
             file_name, file_extension = os.path.splitext(filename)
             update_index(filename, file_extension, file_size)
             clientsocket.send(("Server: Sync Successful!").encode('ascii'))

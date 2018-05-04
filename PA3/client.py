@@ -7,7 +7,7 @@ import inotify.adapters
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
 # connection to server on the port
-s.connect((socket.gethostname(), 3901))
+s.connect((socket.gethostname(), 3903))
 
 # Only log events the following events:
 # files moved in/modified
@@ -45,13 +45,17 @@ def _main():
             if filename != '' and ".goutputstream" not in filename and type_names in log_events_list:
 
                 file_size = int(os.stat("watch_folder/" + filename).st_size)
-                log_send = "{};{}".format(filename, file_size)
 
-                print(log_send)
-                # send log to server
-                s.send(log_send.encode('ascii'))
-                # let client finish sending log
-                time.sleep(1)
+                # encode filename size as 16 bit binary
+                fname_size_b = bin(len(filename))[2:].zfill(16)
+
+                # send file name size & filename to server
+                s.send(fname_size_b.encode('ascii'))
+                s.send(filename.encode('ascii'))
+
+                # encode filesize as 32 bit binary
+                fsize_b = bin(file_size)[2:].zfill(32)
+                s.send(fsize_b.encode('ascii'))
 
                 if type_names == ['IN_CLOSE_WRITE'] or type_names == ['IN_MOVED_TO']:
                     f = open("watch_folder/" + filename, 'rb')
