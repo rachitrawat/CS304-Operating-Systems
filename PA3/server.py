@@ -13,6 +13,9 @@ print("Server is running!")
 # initialize an index
 index = {}
 
+# limit recv bytes size to reduce packet errors
+BYTES_RECV = 32
+
 
 # flag 1
 def retrieve_from_storage(filename):
@@ -41,10 +44,10 @@ def retrieve_from_storage(filename):
     print("Retrieving file %s from storage node..." % filename)
     f = open("server_tmp/" + filename, 'wb')
 
-    while file_size >= 1024:
-        l = server_as_client_socket.recv(1024)
+    while file_size >= BYTES_RECV:
+        l = server_as_client_socket.recv(BYTES_RECV)
         f.write(l)
-        file_size -= 1024
+        file_size -= BYTES_RECV
     if file_size > 0:
         l = server_as_client_socket.recv(file_size)
         f.write(l)
@@ -81,10 +84,10 @@ def upload_to_storage(filename, port_no, file_size):
     print("Uploading file %s to storage node." % filename)
     f = open("server_tmp/" + filename, 'rb')
 
-    while file_size >= 1024:
-        l = f.read(1024)
+    while file_size >= BYTES_RECV:
+        l = f.read(BYTES_RECV)
         server_as_client_socket.send(l)
-        file_size -= 1024
+        file_size -= BYTES_RECV
 
     if file_size > 0:
         l = f.read(file_size)
@@ -144,10 +147,10 @@ while True:
             f = open("server_tmp/" + filename, 'wb')
             file_size = fsize
 
-            while file_size >= 1024:
-                l = clientsocket.recv(1024)
+            while file_size >= BYTES_RECV:
+                l = clientsocket.recv(BYTES_RECV)
                 f.write(l)
-                file_size -= 1024
+                file_size -= BYTES_RECV
             if file_size > 0:
                 l = clientsocket.recv(file_size)
                 f.write(l)
@@ -206,10 +209,10 @@ while True:
                     print("Sending file %s to client..." % file_choice)
                     f = open("server_tmp/" + file_choice, 'rb')
 
-                    while file_size >= 1024:
-                        l = f.read(1024)
+                    while file_size >= BYTES_RECV:
+                        l = f.read(BYTES_RECV)
                         clientsocket.send(l)
-                        file_size -= 1024
+                        file_size -= BYTES_RECV
 
                     if file_size > 0:
                         l = f.read(file_size)

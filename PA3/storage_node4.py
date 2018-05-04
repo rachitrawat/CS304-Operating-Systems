@@ -31,10 +31,10 @@ while True:
 
         print("Receiving file %s from server..." % filename)
         f = open("storage_node_4/" + filename, 'wb')
-        while file_size >= 1024:
-            l = serversocket.recv(1024)
+        while file_size >= BYTES_RECV:
+            l = serversocket.recv(BYTES_RECV)
             f.write(l)
-            file_size -= 1024
+            file_size -= BYTES_RECV
         if file_size > 0:
             l = serversocket.recv(file_size)
             f.write(l)
@@ -47,10 +47,10 @@ while True:
         print("Sending file %s to server..." % filename)
         f = open("storage_node_4/" + filename, 'rb')
 
-        while file_size >= 1024:
-            l = f.read(1024)
+        while file_size >= BYTES_RECV:
+            l = f.read(BYTES_RECV)
             serversocket.send(l)
-            file_size -= 1024
+            file_size -= BYTES_RECV
 
         if file_size > 0:
             l = f.read(file_size)

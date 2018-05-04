@@ -13,6 +13,9 @@ s.connect((socket.gethostname(), 3904))
 # files moved in/modified
 log_events_list = [['IN_MOVED_TO'], ['IN_CLOSE_WRITE']]
 
+# limit recv bytes size to reduce packet errors
+BYTES_RECV = 32
+
 
 # for handling abrupt disconnects
 def exit_handler():
@@ -60,10 +63,10 @@ def _main():
                     f = open("watch_folder/" + filename, 'rb')
                     print('\nUploading file %s... ' % filename)
 
-                    while file_size >= 1024:
-                        l = f.read(1024)
+                    while file_size >= BYTES_RECV:
+                        l = f.read(BYTES_RECV)
                         s.send(l)
-                        file_size -= 1024
+                        file_size -= BYTES_RECV
 
                     if file_size > 0:
                         l = f.read(file_size)
@@ -107,10 +110,10 @@ def _main():
                     print("Downloading file %s..." % file_choice)
                     f = open("download_folder/" + file_choice, 'wb')
 
-                    while file_size >= 1024:
-                        l = s.recv(1024)
+                    while file_size >= BYTES_RECV:
+                        l = s.recv(BYTES_RECV)
                         f.write(l)
-                        file_size -= 1024
+                        file_size -= BYTES_RECV
                     if file_size > 0:
                         l = s.recv(file_size)
                         f.write(l)
