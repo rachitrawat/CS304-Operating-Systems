@@ -77,13 +77,15 @@ def _main():
 
     elif choice == "2":
         while True:
-            server_log = s.recv(1024).decode('ascii')
-            sync_query = server_log.split(';')
-            response = sync_query[0]
-            flag = sync_query[1]
+            flag = s.recv(1).decode('ascii')
 
             if flag == "1":
-                print("\nServer file index:\n" + response)
+                # recv index str size & index
+                index_str_size_b = s.recv(16).decode('ascii')
+                index_str_size = int(index_str_size_b, 2)
+                index_str = s.recv(index_str_size).decode('ascii')
+
+                print("\nServer file index:\n" + index_str)
                 file_choice = input("\nEnter file name to download: ")
                 s.send(file_choice.encode('ascii'))
                 # receive file log

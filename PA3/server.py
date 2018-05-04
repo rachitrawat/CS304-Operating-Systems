@@ -109,6 +109,12 @@ while True:
         while True:
             # recv file name size & file name
             fname_size_b = clientsocket.recv(16).decode('ascii')
+
+            if fname_size_b == '':
+                print("Client disconnected!")
+                clientsocket.close()
+                break
+
             fname_size = int(fname_size_b, 2)
             filename = clientsocket.recv(fname_size).decode('ascii')
 
@@ -141,9 +147,17 @@ while True:
         while True:
             # if index non-empty
             if index:
+                # notify client that index exists
+                clientsocket.send(("1".encode('ascii')))
+
                 print("\nSending index...")
-                log_send = "{};{}".format("\n".join(index.keys()), "1")
-                clientsocket.send((log_send.encode('ascii')))
+                index_str = "\n".join(index.keys())
+                index_str_size_b = bin(len(index_str))[2:].zfill(16)
+
+                # send index str size & index str to server
+                clientsocket.send(index_str_size_b.encode('ascii'))
+                clientsocket.send(index_str.encode('ascii'))
+
                 file_choice = clientsocket.recv(100).decode('ascii')
                 if file_choice == '':
                     print("Client disconnected!")
@@ -187,8 +201,8 @@ while True:
 
             else:
                 print("\nNo synced files!")
-                log_send = "{};{}".format("No synced files!", "0")
-                clientsocket.send((log_send.encode('ascii')))
+                # notify client that no index exists
+                clientsocket.send(("1".encode('ascii')))
                 print("Client disconnected!")
                 clientsocket.close()
                 break
