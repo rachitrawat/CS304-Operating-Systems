@@ -72,7 +72,7 @@ def _main():
 
                     f.close()
                     print("Upload finished of %s!" % filename)
-                    print(s.recv(1024).decode('ascii'))
+                    print(s.recv(24).decode('ascii'))
 
 
     elif choice == "2":
