@@ -202,7 +202,7 @@ while True:
             else:
                 print("\nNo synced files!")
                 # notify client that no index exists
-                clientsocket.send(("1".encode('ascii')))
+                clientsocket.send(("0".encode('ascii')))
                 print("Client disconnected!")
                 clientsocket.close()
                 break

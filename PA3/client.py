@@ -115,7 +115,7 @@ def _main():
                     continue
 
             else:
-                print("\n" + response)
+                print("Server: No synced files!")
                 break
 
     else:
