@@ -7,7 +7,7 @@ import inotify.adapters
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
 # connection to server on the port
-s.connect((socket.gethostname(), 3900))
+s.connect((socket.gethostname(), 3901))
 
 # Only log events the following events:
 # files moved in/modified
@@ -26,7 +26,7 @@ atexit.register(exit_handler)
 
 def _main():
     # receive initial messages from server
-    print("Server: " + s.recv(100).decode('ascii'))
+    print("Server: " + s.recv(61).decode('ascii'))
 
     choice = input()
     s.send(choice.encode('ascii'))
@@ -44,11 +44,10 @@ def _main():
             # ignore filename = .goutputstream* ['IN_CLOSE_WRITE'] is sufficient
             if filename != '' and ".goutputstream" not in filename and type_names in log_events_list:
 
-                file_size = 0
-
                 file_size = int(os.stat("watch_folder/" + filename).st_size)
-                log_send = "{};{};{}".format(filename, ''.join(type_names), file_size)
+                log_send = "{};{}".format(filename, file_size)
 
+                print(log_send)
                 # send log to server
                 s.send(log_send.encode('ascii'))
                 # let client finish sending log

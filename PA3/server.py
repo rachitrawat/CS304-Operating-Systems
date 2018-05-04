@@ -5,7 +5,7 @@ import time
 # create an INET, STREAMing server socket
 serversocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 # bind the socket to a public host, and a port
-serversocket.bind((socket.gethostname(), 3900))
+serversocket.bind((socket.gethostname(), 3901))
 # become a server socket and queue up to 5 requests
 serversocket.listen(5)
 
@@ -31,7 +31,7 @@ def retrieve_from_storage(filename):
     time.sleep(1)
     print("Retrieving file %s from storage node..." % filename)
     f = open("server_tmp/" + filename, 'wb')
-    file_size = int(sync_query[2])
+    file_size = int(sync_query[1])
 
     while file_size >= 1024:
         l = server_as_client_socket.recv(1024)
@@ -80,21 +80,20 @@ def upload_to_storage(filename, port_no, file_size):
     print("Deleted file %s from server." % filename)
 
 
-def update_index(filename, file_extension, event_name, file_size):
-    if event_name == 'IN_MOVED_TO' or event_name == 'IN_CLOSE_WRITE':
-        # index filename with port numbers of respective storage nodes
-        if file_extension == ".pdf":
-            port_no = 4001
-        elif file_extension == ".txt":
-            port_no = 4002
-        elif file_extension == ".mp3":
-            port_no = 4003
-        else:
-            port_no = 4004
+def update_index(filename, file_extension, file_size):
+    # index filename with port numbers of respective storage nodes
+    if file_extension == ".pdf":
+        port_no = 4001
+    elif file_extension == ".txt":
+        port_no = 4002
+    elif file_extension == ".mp3":
+        port_no = 4003
+    else:
+        port_no = 4004
 
-        index[filename] = [port_no, file_size]
-        # upload file to storage_node
-        upload_to_storage(filename, port_no, file_size)
+    index[filename] = [port_no, file_size]
+    # upload file to storage_node
+    upload_to_storage(filename, port_no, file_size)
 
 
 while True:
@@ -104,7 +103,7 @@ while True:
 
     # send welcome message
     clientsocket.send(("Welcome! Choose an option:\n1. Sync Files\n2. Re-download Files".encode('ascii')))
-    choice = clientsocket.recv(8).decode('ascii')
+    choice = clientsocket.recv(1).decode('ascii')
 
     if choice == "1":
         while True:
@@ -116,29 +115,27 @@ while True:
 
             sync_query = client_log.split(';')
             filename = sync_query[0]
-            event_name = sync_query[1]
 
-            if event_name == 'IN_MOVED_TO' or event_name == 'IN_CLOSE_WRITE':
-                print("\nReceiving file %s from client..." % filename)
-                f = open("server_tmp/" + filename, 'wb')
-                file_size = int(sync_query[2])
+            print("\nReceiving file %s from client..." % filename)
+            f = open("server_tmp/" + filename, 'wb')
+            file_size = int(sync_query[1])
 
-                while file_size >= 1024:
-                    l = clientsocket.recv(1024)
-                    f.write(l)
-                    file_size -= 1024
-                if file_size > 0:
-                    l = clientsocket.recv(file_size)
-                    f.write(l)
+            while file_size >= 1024:
+                l = clientsocket.recv(1024)
+                f.write(l)
+                file_size -= 1024
+            if file_size > 0:
+                l = clientsocket.recv(file_size)
+                f.write(l)
 
-                f.close()
+            f.close()
 
-                print("File %s received from client!" % filename)
+            print("File %s received from client!" % filename)
 
-                file_size = int(sync_query[2])
-                file_name, file_extension = os.path.splitext(filename)
-                update_index(filename, file_extension, event_name, file_size)
-                clientsocket.send(("Server: Sync Successful!").encode('ascii'))
+            file_size = int(sync_query[1])
+            file_name, file_extension = os.path.splitext(filename)
+            update_index(filename, file_extension, file_size)
+            clientsocket.send(("Server: Sync Successful!").encode('ascii'))
 
     elif choice == "2":
         while True:
