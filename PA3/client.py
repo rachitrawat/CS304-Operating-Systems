@@ -1,6 +1,6 @@
-import socket
 import os
-import time
+import socket
+import atexit
 import inotify.adapters
 
 # create a socket object
@@ -13,9 +13,8 @@ s.connect((socket.gethostname(), 3904))
 # files moved in/modified
 log_events_list = [['IN_MOVED_TO'], ['IN_CLOSE_WRITE']]
 
-import atexit
 
-
+# for handling abrupt disconnects
 def exit_handler():
     print("Closing Socket!")
     s.close()

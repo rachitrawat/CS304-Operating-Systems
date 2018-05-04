@@ -1,6 +1,5 @@
-import socket
 import os
-import time
+import socket
 
 # create an INET, STREAMing server socket
 serversocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
