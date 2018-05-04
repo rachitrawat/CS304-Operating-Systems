@@ -5,7 +5,7 @@ import time
 # create an INET, STREAMing server socket
 serversocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 # bind the socket to a public host, and a port
-serversocket.bind((socket.gethostname(), 3903))
+serversocket.bind((socket.gethostname(), 3904))
 # become a server socket and queue up to 5 requests
 serversocket.listen(5)
 
@@ -15,6 +15,7 @@ print("Server is running!")
 index = {}
 
 
+# flag 1
 def retrieve_from_storage(filename):
     port_no = index[filename][0]
     file_size = index[filename][1]
@@ -23,12 +24,21 @@ def retrieve_from_storage(filename):
     # connect to storage node
     server_as_client_socket.connect((socket.gethostname(), port_no))
     print("Connected to storage node at port %s." % port_no)
-    # send req type : 2 for file file retrieval
-    log_send = "{};{};{}".format(filename, file_size, "2")
-    # send file log
-    server_as_client_socket.send((log_send).encode('ascii'))
-    # wait for server to finish sending log
-    time.sleep(1)
+
+    # notify storage node to begin download process
+    server_as_client_socket.send(("1".encode('ascii')))
+
+    # encode filename size as 16 bit binary
+    fname_size_b = bin(len(filename))[2:].zfill(16)
+
+    # send file name size & filename to server
+    server_as_client_socket.send(fname_size_b.encode('ascii'))
+    server_as_client_socket.send(filename.encode('ascii'))
+
+    # encode filesize as 32 bit binary
+    fsize_b = bin(file_size)[2:].zfill(32)
+    server_as_client_socket.send(fsize_b.encode('ascii'))
+
     print("Retrieving file %s from storage node..." % filename)
     f = open("server_tmp/" + filename, 'wb')
 
@@ -47,18 +57,28 @@ def retrieve_from_storage(filename):
     print("Disconnected from storage node.")
 
 
+# flag 0
 def upload_to_storage(filename, port_no, file_size):
     # create a socket object
     server_as_client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     # connect to storage node
     server_as_client_socket.connect((socket.gethostname(), port_no))
     print("Connected to storage node at port %s." % port_no)
-    # send req type : 1 for file upload
-    log_send = "{};{};{}".format(filename, file_size, "1")
-    # send file log
-    server_as_client_socket.send((log_send).encode('ascii'))
-    # wait for server to finish sending log
-    time.sleep(1)
+
+    # notify storage node to begin upload process
+    server_as_client_socket.send(("0".encode('ascii')))
+
+    # encode filename size as 16 bit binary
+    fname_size_b = bin(len(filename))[2:].zfill(16)
+
+    # send file name size & filename to server
+    server_as_client_socket.send(fname_size_b.encode('ascii'))
+    server_as_client_socket.send(filename.encode('ascii'))
+
+    # encode filesize as 32 bit binary
+    fsize_b = bin(file_size)[2:].zfill(32)
+    server_as_client_socket.send(fsize_b.encode('ascii'))
+
     print("Uploading file %s to storage node." % filename)
     f = open("server_tmp/" + filename, 'rb')
 
@@ -159,14 +179,14 @@ while True:
 
                 # recv file name size & file name
                 fname_size_b = clientsocket.recv(16).decode('ascii')
-                fname_size = int(fname_size_b, 2)
-                filename = clientsocket.recv(fname_size).decode('ascii')
-                file_choice = filename
-
-                if file_choice == '':
+                # in case client abruptly disconnects
+                if fname_size_b == '':
                     print("Client disconnected!")
                     clientsocket.close()
                     break
+                fname_size = int(fname_size_b, 2)
+                filename = clientsocket.recv(fname_size).decode('ascii')
+                file_choice = filename
 
                 if file_choice not in index:
                     print("File %s not in index!" % file_choice)

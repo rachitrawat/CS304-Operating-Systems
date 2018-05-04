@@ -8,23 +8,27 @@ storagesocket1.bind((socket.gethostname(), 4002))
 storagesocket1.listen(5)
 print("Storage node 2 is running!")
 
-# initialize an index
-index = {}
-
 while True:
     # establish a connection
     serversocket, addr = storagesocket1.accept()
     print("\nGot a connection from server! %s" % str(addr))
 
-    # receive request type
-    server_log = serversocket.recv(100).decode('ascii')
-    sync_query = server_log.split(';')
-    filename = sync_query[0]
-    file_size = int(sync_query[1])
-    req_type = sync_query[2]
+    # 0 for server upload, 1 for server download
+    req_type = serversocket.recv(1).decode('ascii')
+
+    # recv file name size & file name
+    fname_size_b = serversocket.recv(16).decode('ascii')
+    fname_size = int(fname_size_b, 2)
+    filename = serversocket.recv(fname_size).decode('ascii')
+
+    # recv file size
+    fsize_b = serversocket.recv(32)
+    fsize = int(fsize_b, 2)
+    file_size = fsize
 
     # server wants to upload file
-    if req_type == "1":
+    if req_type == "0":
+
         print("Receiving file %s from server..." % filename)
         f = open("storage_node_2/" + filename, 'wb')
         while file_size >= 1024:
@@ -39,7 +43,7 @@ while True:
         print("File %s synced!" % filename)
 
     # server wants to retrieve file
-    elif req_type == "2":
+    elif req_type == "1":
         print("Sending file %s to server..." % filename)
         f = open("storage_node_2/" + filename, 'rb')
 

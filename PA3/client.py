@@ -7,7 +7,7 @@ import inotify.adapters
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
 # connection to server on the port
-s.connect((socket.gethostname(), 3903))
+s.connect((socket.gethostname(), 3904))
 
 # Only log events the following events:
 # files moved in/modified
@@ -119,15 +119,17 @@ def _main():
                     f.close()
                     print("Download finished of %s!" % file_choice)
 
-                # file does not exist in server index
+                # requested file does not exist in server index
                 else:
-                    print("\nServer: File does not exist in index!")
+                    print("\nServer: File %s does not exist in index!" % file_choice)
                     continue
 
+            # empty server index
             else:
                 print("\nServer: No synced files!")
                 break
 
+    # invalid choice
     else:
         print("\nInvalid choice.")
 
