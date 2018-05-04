@@ -87,16 +87,25 @@ def _main():
 
                 print("\nServer file index:\n" + index_str)
                 file_choice = input("\nEnter file name to download: ")
-                s.send(file_choice.encode('ascii'))
-                # receive file log
-                server_log = s.recv(1024).decode('ascii')
-                sync_query = server_log.split(';')
-                response = sync_query[0]
-                flag = sync_query[1]
 
+                # encode filename size as 16 bit binary
+                fname_size_b = bin(len(file_choice))[2:].zfill(16)
+
+                # send file name size & filename to server
+                s.send(fname_size_b.encode('ascii'))
+                s.send(file_choice.encode('ascii'))
+
+                # if file exists or not in index
+                flag = s.recv(1).decode('ascii')
+
+                # file exists in server index
                 if flag == "1":
+                    # recv file size
+                    fsize_b = s.recv(32)
+                    fsize = int(fsize_b, 2)
+                    file_size = fsize
+
                     print("Downloading file %s..." % file_choice)
-                    file_size = int(response)
                     f = open("download_folder/" + file_choice, 'wb')
 
                     while file_size >= 1024:
@@ -110,12 +119,13 @@ def _main():
                     f.close()
                     print("Download finished of %s!" % file_choice)
 
+                # file does not exist in server index
                 else:
-                    print("\nServer: " + response)
+                    print("\nServer: File does not exist in index!")
                     continue
 
             else:
-                print("Server: No synced files!")
+                print("\nServer: No synced files!")
                 break
 
     else:

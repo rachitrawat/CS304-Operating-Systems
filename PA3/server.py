@@ -31,7 +31,6 @@ def retrieve_from_storage(filename):
     time.sleep(1)
     print("Retrieving file %s from storage node..." % filename)
     f = open("server_tmp/" + filename, 'wb')
-    file_size = int(sync_query[1])
 
     while file_size >= 1024:
         l = server_as_client_socket.recv(1024)
@@ -158,7 +157,12 @@ while True:
                 clientsocket.send(index_str_size_b.encode('ascii'))
                 clientsocket.send(index_str.encode('ascii'))
 
-                file_choice = clientsocket.recv(100).decode('ascii')
+                # recv file name size & file name
+                fname_size_b = clientsocket.recv(16).decode('ascii')
+                fname_size = int(fname_size_b, 2)
+                filename = clientsocket.recv(fname_size).decode('ascii')
+                file_choice = filename
+
                 if file_choice == '':
                     print("Client disconnected!")
                     clientsocket.close()
@@ -166,38 +170,37 @@ while True:
 
                 if file_choice not in index:
                     print("File %s not in index!" % file_choice)
-                    log_send = "{};{}".format("File " + file_choice + " not in index! Try again.", "0")
+                    # notify client that file does not exist in index
+                    clientsocket.send(("0".encode('ascii')))
                 else:
+                    # notify client that file exists in index
+                    clientsocket.send(("1".encode('ascii')))
+
                     # Retrieve from storage
                     retrieve_from_storage(file_choice)
                     file_size = int(index[file_choice][1])
-                    # send file size
-                    log_send = "{};{}".format(file_size, "1")
 
-                clientsocket.send(log_send.encode('ascii'))
-                # wait for server to finish sending log
-                time.sleep(1)
+                    # encode filesize as 32 bit binary
+                    fsize_b = bin(file_size)[2:].zfill(32)
+                    clientsocket.send(fsize_b.encode('ascii'))
 
-                if file_choice not in index:
-                    continue
+                    print("Sending file %s to client..." % file_choice)
+                    f = open("server_tmp/" + file_choice, 'rb')
 
-                print("Sending file %s to client..." % file_choice)
-                f = open("server_tmp/" + file_choice, 'rb')
+                    while file_size >= 1024:
+                        l = f.read(1024)
+                        clientsocket.send(l)
+                        file_size -= 1024
 
-                while file_size >= 1024:
-                    l = f.read(1024)
-                    clientsocket.send(l)
-                    file_size -= 1024
+                    if file_size > 0:
+                        l = f.read(file_size)
+                        clientsocket.send(l)
 
-                if file_size > 0:
-                    l = f.read(file_size)
-                    clientsocket.send(l)
+                    f.close()
 
-                f.close()
-
-                print("File %s sent to client!" % file_choice)
-                os.remove("server_tmp/" + file_choice)
-                print("Deleted file %s from server." % file_choice)
+                    print("File %s sent to client!" % file_choice)
+                    os.remove("server_tmp/" + file_choice)
+                    print("Deleted file %s from server." % file_choice)
 
             else:
                 print("\nNo synced files!")
