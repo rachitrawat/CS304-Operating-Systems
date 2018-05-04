@@ -1,16 +1,16 @@
 import socket
 
 # create an INET, STREAMing server socket
-storagesocket1 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+storagesocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 # bind the socket to a public host, and a port
-storagesocket1.bind((socket.gethostname(), 4003))
+storagesocket.bind((socket.gethostname(), 4003))
 # become a storage socket and queue up to 5 requests
-storagesocket1.listen(5)
+storagesocket.listen(5)
 print("Storage node 3 is running!")
 
 while True:
     # establish a connection
-    serversocket, addr = storagesocket1.accept()
+    serversocket, addr = storagesocket.accept()
     print("\nGot a connection from server! %s" % str(addr))
 
     # 0 for server upload, 1 for server download
