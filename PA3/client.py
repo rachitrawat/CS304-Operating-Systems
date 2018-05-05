@@ -8,7 +8,7 @@ import hashlib
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
 # connection to server on the port
-s.connect(('10.1.17.16', 3005))
+s.connect(('10.1.19.74', 3005))
 
 # Only log events the following events:
 # files moved in/modified
