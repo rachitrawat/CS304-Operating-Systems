@@ -25,7 +25,7 @@ while True:
     filename = serversocket.recv(fname_size).decode('ascii')
 
     # recv file size
-    fsize_b = serversocket.recv(32)
+    fsize_b = serversocket.recv(32).decode('ascii')
     fsize = int(fsize_b, 2)
     file_size = fsize
 

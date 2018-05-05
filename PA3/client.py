@@ -2,6 +2,7 @@ import os
 import socket
 import atexit
 import inotify.adapters
+import hashlib
 
 # create a socket object
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -24,6 +25,14 @@ def exit_handler():
 
 
 atexit.register(exit_handler)
+
+
+def md5(fname):
+    hash_md5 = hashlib.md5()
+    with open(fname, "rb") as f:
+        for chunk in iter(lambda: f.read(4096), b""):
+            hash_md5.update(chunk)
+    return hash_md5.hexdigest()
 
 
 def _main():
@@ -58,6 +67,9 @@ def _main():
                 # encode filesize as 32 bit binary
                 fsize_b = bin(file_size)[2:].zfill(32)
                 s.send(fsize_b.encode('ascii'))
+
+                # send 32 bit hash of file
+                s.send(md5("watch_folder/" + filename).encode('ascii'))
 
                 if type_names == ['IN_CLOSE_WRITE'] or type_names == ['IN_MOVED_TO']:
                     f = open("watch_folder/" + filename, 'rb')
@@ -103,7 +115,7 @@ def _main():
                 # file exists in server index
                 if flag == "1":
                     # recv file size
-                    fsize_b = s.recv(32)
+                    fsize_b = s.recv(32).decode('ascii')
                     fsize = int(fsize_b, 2)
                     file_size = fsize
 

@@ -1,5 +1,6 @@
 import os
 import socket
+import hashlib
 
 # create an INET, STREAMing server socket
 serversocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -15,6 +16,14 @@ index = {}
 
 # limit recv bytes size to reduce packet errors
 BYTES_RECV = 32
+
+
+def md5(fname):
+    hash_md5 = hashlib.md5()
+    with open(fname, "rb") as f:
+        for chunk in iter(lambda: f.read(4096), b""):
+            hash_md5.update(chunk)
+    return hash_md5.hexdigest()
 
 
 # flag 1
@@ -140,8 +149,11 @@ while True:
             filename = clientsocket.recv(fname_size).decode('ascii')
 
             # recv file size
-            fsize_b = clientsocket.recv(32)
+            fsize_b = clientsocket.recv(32).decode('ascii')
             fsize = int(fsize_b, 2)
+
+            # recv hash
+            md5_hash = clientsocket.recv(32).decode('ascii')
 
             print("\nReceiving file %s from client..." % filename)
             f = open("server_tmp/" + filename, 'wb')
@@ -158,6 +170,12 @@ while True:
             f.close()
 
             print("File %s received from client!" % filename)
+
+            # verify hash
+            if md5("server_tmp/" + filename) == md5_hash:
+                print("Hash verified.")
+            else:
+                print("Hash mismatch.")
 
             file_size = fsize
             file_name, file_extension = os.path.splitext(filename)
