@@ -36,8 +36,8 @@ def md5(fname):
 
 
 def _main():
-    # receive initial messages from server
-    print("Server: " + s.recv(61).decode('ascii'))
+    # print initial messages
+    print("Server: Choose an option:\n1. Sync Files\n2. Re-download Files")
 
     choice = input()
     s.send(choice.encode('ascii'))
@@ -86,7 +86,10 @@ def _main():
 
                     f.close()
                     print("Upload finished of %s!" % filename)
-                    print(s.recv(24).decode('ascii'))
+
+                    server_response = s.recv(1).decode('ascii')
+                    if server_response == "1":
+                        print("Server: Sync successful")
 
 
     elif choice == "2":

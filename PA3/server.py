@@ -147,8 +147,7 @@ while True:
     clientsocket, addr = serversocket.accept()
     print("\nGot a connection from! %s" % str(addr))
 
-    # send welcome message
-    clientsocket.send(("Welcome! Choose an option:\n1. Sync Files\n2. Re-download Files".encode('ascii')))
+    # get client choice
     choice = clientsocket.recv(1).decode('ascii')
 
     if choice == "1":
@@ -201,7 +200,7 @@ while True:
             file_size = fsize
             file_name, file_extension = os.path.splitext(filename)
             update_index(filename, file_extension, file_size, md5_hash)
-            clientsocket.send(("Server: Sync Successful!").encode('ascii'))
+            clientsocket.send("1".encode('ascii'))
 
     elif choice == "2":
         while True:
