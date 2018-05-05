@@ -8,6 +8,9 @@ storagesocket.bind((socket.gethostname(), 4004))
 storagesocket.listen(5)
 print("Storage node 4 is running!")
 
+# limit recv bytes size to reduce packet errors
+BYTES_RECV = 32
+
 while True:
     # establish a connection
     serversocket, addr = storagesocket.accept()
