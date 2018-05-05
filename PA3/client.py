@@ -8,14 +8,14 @@ import hashlib
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
 # connection to server on the port
-s.connect((socket.gethostname(), 3005))
+s.connect(('10.1.17.16', 3005))
 
 # Only log events the following events:
 # files moved in/modified
 log_events_list = [['IN_MOVED_TO'], ['IN_CLOSE_WRITE']]
 
-# limit recv bytes size to reduce packet errors
-BYTES_RECV = 32
+# max recv bytes size
+BYTES_RECV = 1024
 
 
 # for handling abrupt disconnects
@@ -119,19 +119,32 @@ def _main():
                     fsize = int(fsize_b, 2)
                     file_size = fsize
 
+                    # recv hash
+                    md5_hash = s.recv(32).decode('ascii')
+
                     print("Downloading file %s..." % file_choice)
                     f = open("download_folder/" + file_choice, 'wb')
 
                     while file_size >= BYTES_RECV:
-                        l = s.recv(BYTES_RECV)
-                        f.write(l)
+                        buff = bytearray()
+                        while len(buff) < BYTES_RECV:
+                            buff.extend(s.recv(BYTES_RECV - len(buff)))
+                        f.write(buff)
                         file_size -= BYTES_RECV
                     if file_size > 0:
-                        l = s.recv(file_size)
-                        f.write(l)
+                        buff = bytearray()
+                        while len(buff) < file_size:
+                            buff.extend(s.recv(file_size - len(buff)))
+                        f.write(buff)
 
                     f.close()
                     print("Download finished of %s!" % file_choice)
+
+                    # verify hash
+                    if md5("download_folder/" + file_choice) == md5_hash:
+                        print("Hash verified.")
+                    else:
+                        print("Hash mismatch.")
 
                 # requested file does not exist in server index
                 else:

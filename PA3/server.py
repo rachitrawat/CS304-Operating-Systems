@@ -5,7 +5,7 @@ import hashlib
 # create an INET, STREAMing server socket
 serversocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 # bind the socket to a public host, and a port
-serversocket.bind((socket.gethostname(), 3005))
+serversocket.bind(('10.1.17.16', 3005))
 # become a server socket and queue up to 5 requests
 serversocket.listen(5)
 
@@ -14,8 +14,8 @@ print("Server is running!")
 # initialize an index
 index = {}
 
-# limit recv bytes size to reduce packet errors
-BYTES_RECV = 32
+# max recv bytes size
+BYTES_RECV = 1024
 
 
 def md5(fname):
@@ -30,10 +30,12 @@ def md5(fname):
 def retrieve_from_storage(filename):
     port_no = index[filename][0]
     file_size = index[filename][1]
+    md5_hash = index[filename][2]
+
     # create a socket object
     server_as_client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     # connect to storage node
-    server_as_client_socket.connect((socket.gethostname(), port_no))
+    server_as_client_socket.connect(('10.1.22.140', port_no))
     print("Connected to storage node at port %s." % port_no)
 
     # notify storage node to begin download process
@@ -51,29 +53,43 @@ def retrieve_from_storage(filename):
     server_as_client_socket.send(fsize_b.encode('ascii'))
 
     print("Retrieving file %s from storage node..." % filename)
-    f = open("server_tmp/" + filename, 'wb')
+    f = open("/storage/emulated/0/qpython/server_tmp/" + filename, 'wb')
 
     while file_size >= BYTES_RECV:
-        l = server_as_client_socket.recv(BYTES_RECV)
-        f.write(l)
+        buff = bytearray()
+        while len(buff) < BYTES_RECV:
+            buff.extend(server_as_client_socket.recv(BYTES_RECV - len(buff)))
+        f.write(buff)
         file_size -= BYTES_RECV
     if file_size > 0:
-        l = server_as_client_socket.recv(file_size)
-        f.write(l)
+        buff = bytearray()
+        while len(buff) < file_size:
+            buff.extend(server_as_client_socket.recv(file_size - len(buff)))
+        f.write(buff)
 
     f.close()
 
     print("Download finished of %s!" % filename)
+
+    # verify hash
+    if md5("/storage/emulated/0/qpython/server_tmp/" + filename) == md5_hash:
+        print("Hash verified.")
+    else:
+        print("Hash mismatch.")
+
     server_as_client_socket.close()
     print("Disconnected from storage node.")
 
 
 # flag 0
-def upload_to_storage(filename, port_no, file_size):
+def upload_to_storage(filename):
+    port_no = index[filename][0]
+    file_size = index[filename][1]
+
     # create a socket object
     server_as_client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     # connect to storage node
-    server_as_client_socket.connect((socket.gethostname(), port_no))
+    server_as_client_socket.connect(('10.1.22.140', port_no))
     print("Connected to storage node at port %s." % port_no)
 
     # notify storage node to begin upload process
@@ -86,12 +102,12 @@ def upload_to_storage(filename, port_no, file_size):
     server_as_client_socket.send(fname_size_b.encode('ascii'))
     server_as_client_socket.send(filename.encode('ascii'))
 
-    # encode filesize as 32 bit binary
+    # encode & send filesize as 32 bit binary
     fsize_b = bin(file_size)[2:].zfill(32)
     server_as_client_socket.send(fsize_b.encode('ascii'))
 
     print("Uploading file %s to storage node." % filename)
-    f = open("server_tmp/" + filename, 'rb')
+    f = open("/storage/emulated/0/qpython/server_tmp/" + filename, 'rb')
 
     while file_size >= BYTES_RECV:
         l = f.read(BYTES_RECV)
@@ -106,11 +122,11 @@ def upload_to_storage(filename, port_no, file_size):
     print("Upload finished of %s!" % filename)
     server_as_client_socket.close()
     print("Disconnected from storage node.")
-    os.remove("server_tmp/" + filename)
+    os.remove("/storage/emulated/0/qpython/server_tmp/" + filename)
     print("Deleted file %s from server." % filename)
 
 
-def update_index(filename, file_extension, file_size):
+def update_index(filename, file_extension, file_size, md5_hash):
     # index filename with port numbers of respective storage nodes
     if file_extension == ".pdf":
         port_no = 4001
@@ -121,9 +137,9 @@ def update_index(filename, file_extension, file_size):
     else:
         port_no = 4004
 
-    index[filename] = [port_no, file_size]
+    index[filename] = [port_no, file_size, md5_hash]
     # upload file to storage_node
-    upload_to_storage(filename, port_no, file_size)
+    upload_to_storage(filename)
 
 
 while True:
@@ -156,7 +172,7 @@ while True:
             md5_hash = clientsocket.recv(32).decode('ascii')
 
             print("\nReceiving file %s from client..." % filename)
-            f = open("server_tmp/" + filename, 'wb')
+            f = open("/storage/emulated/0/qpython/server_tmp/" + filename, 'wb')
             file_size = fsize
 
             while file_size >= BYTES_RECV:
@@ -167,22 +183,24 @@ while True:
                 file_size -= BYTES_RECV
 
             if file_size > 0:
-                l = clientsocket.recv(file_size)
-                f.write(l)
+                buff = bytearray()
+                while len(buff) < file_size:
+                    buff.extend(clientsocket.recv(file_size - len(buff)))
+                f.write(buff)
 
             f.close()
 
             print("File %s received from client!" % filename)
 
             # verify hash
-            if md5("server_tmp/" + filename) == md5_hash:
+            if md5("/storage/emulated/0/qpython/server_tmp/" + filename) == md5_hash:
                 print("Hash verified.")
             else:
                 print("Hash mismatch.")
 
             file_size = fsize
             file_name, file_extension = os.path.splitext(filename)
-            update_index(filename, file_extension, file_size)
+            update_index(filename, file_extension, file_size, md5_hash)
             clientsocket.send(("Server: Sync Successful!").encode('ascii'))
 
     elif choice == "2":
@@ -227,8 +245,11 @@ while True:
                     fsize_b = bin(file_size)[2:].zfill(32)
                     clientsocket.send(fsize_b.encode('ascii'))
 
+                    # send md5 hash
+                    clientsocket.send(index[filename][2].encode('ascii'))
+
                     print("Sending file %s to client..." % file_choice)
-                    f = open("server_tmp/" + file_choice, 'rb')
+                    f = open("/storage/emulated/0/qpython/server_tmp/" + file_choice, 'rb')
 
                     while file_size >= BYTES_RECV:
                         l = f.read(BYTES_RECV)
@@ -242,7 +263,7 @@ while True:
                     f.close()
 
                     print("File %s sent to client!" % file_choice)
-                    os.remove("server_tmp/" + file_choice)
+                    os.remove("/storage/emulated/0/qpython/server_tmp/" + file_choice)
                     print("Deleted file %s from server." % file_choice)
 
             else:

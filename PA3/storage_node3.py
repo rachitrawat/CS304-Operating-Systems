@@ -3,13 +3,13 @@ import socket
 # create an INET, STREAMing server socket
 storagesocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 # bind the socket to a public host, and a port
-storagesocket.bind((socket.gethostname(), 4003))
+storagesocket.bind(('10.1.22.140', 4003))
 # become a storage socket and queue up to 5 requests
 storagesocket.listen(5)
 print("Storage node 3 is running!")
 
-# limit recv bytes size to reduce packet errors
-BYTES_RECV = 32
+# max recv bytes size
+BYTES_RECV = 1024
 
 while True:
     # establish a connection
@@ -35,12 +35,16 @@ while True:
         print("Receiving file %s from server..." % filename)
         f = open("storage_node_3/" + filename, 'wb')
         while file_size >= BYTES_RECV:
-            l = serversocket.recv(BYTES_RECV)
-            f.write(l)
+            buff = bytearray()
+            while len(buff) < BYTES_RECV:
+                buff.extend(serversocket.recv(BYTES_RECV - len(buff)))
+            f.write(buff)
             file_size -= BYTES_RECV
         if file_size > 0:
-            l = serversocket.recv(file_size)
-            f.write(l)
+            buff = bytearray()
+            while len(buff) < file_size:
+                buff.extend(serversocket.recv(file_size - len(buff)))
+            f.write(buff)
 
         f.close()
         print("File %s synced!" % filename)
