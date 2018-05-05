@@ -5,7 +5,7 @@ import hashlib
 # create an INET, STREAMing server socket
 serversocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 # bind the socket to a public host, and a port
-serversocket.bind((socket.gethostname(), 3904))
+serversocket.bind((socket.gethostname(), 3005))
 # become a server socket and queue up to 5 requests
 serversocket.listen(5)
 
@@ -160,9 +160,12 @@ while True:
             file_size = fsize
 
             while file_size >= BYTES_RECV:
-                l = clientsocket.recv(BYTES_RECV)
-                f.write(l)
+                buff = bytearray()
+                while len(buff) < BYTES_RECV:
+                    buff.extend(clientsocket.recv(BYTES_RECV - len(buff)))
+                f.write(buff)
                 file_size -= BYTES_RECV
+
             if file_size > 0:
                 l = clientsocket.recv(file_size)
                 f.write(l)
