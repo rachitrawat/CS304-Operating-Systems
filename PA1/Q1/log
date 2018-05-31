@@ -1,0 +1,58 @@
+N :  1000
+P :  5
+
+real	0m0.978s
+user	0m0.756s
+sys	0m0.256s
+
+
+N :  10000
+P :  5
+
+real	0m9.819s
+user	0m8.061s
+sys	0m2.357s
+
+
+
+
+N :  10000
+P :  5
+
+real	0m9.943s
+user	0m8.096s
+sys	0m2.456s
+
+
+N :  10000
+P :  10
+
+real	0m9.790s
+user	0m8.098s
+sys	0m2.340s
+
+
+N :  10000
+P :  20
+
+real	0m9.785s
+user	0m8.044s
+sys	0m2.395s
+
+
+N :  10000
+P :  40
+
+real	0m9.834s
+user	0m8.240s
+sys	0m2.302s
+
+
+N :  10000
+P :  80
+
+real	0m9.893s
+user	0m8.371s
+sys	0m2.331s
+
+

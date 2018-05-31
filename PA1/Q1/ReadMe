@@ -1,0 +1,15 @@
+* Run generate_log.sh to get time logs for all N & P values asked in the question
+Note: Time logs are labelled under 'real' tag
+Note: Higher powers of 10 (>=5) are not logged due to resource contraints
+
+* min_max file content description:
+	Max Value from process 1
+	Min Value from process 1
+	Max Value from process 2
+	Min Value from process 2
+	------------------------
+ 	------------------------
+	------------------------
+	------------------------
+	Combined Max Value
+	Combined Min Value
